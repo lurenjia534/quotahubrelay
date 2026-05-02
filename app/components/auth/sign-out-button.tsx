@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { signOut } from "@/app/auth-actions";
+import { signOut } from "@/app/actions/auth";
 
 export function SignOutButton() {
   const [isPending, startTransition] = useTransition();

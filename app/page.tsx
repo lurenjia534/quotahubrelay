@@ -1,7 +1,8 @@
 import { headers } from "next/headers";
 import { auth, isAuthConfigured } from "@/app/lib/auth";
-import { SignInWithGithub } from "@/app/sign-in-with-github";
-import { SignOutButton } from "@/app/sign-out-button";
+import { SignInWithGithub } from "@/app/components/auth/sign-in-with-github";
+import { SignOutButton } from "@/app/components/auth/sign-out-button";
+import { UserSummary } from "@/app/components/auth/user-summary";
 
 type LoginPageProps = {
   searchParams?: Promise<{
@@ -48,23 +49,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
           {user ? (
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={user.image ?? ""}
-                  alt=""
-                  className="h-10 w-10 rounded-full"
-                />
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                    {user.name}
-                  </p>
-                  <p className="truncate text-xs text-zinc-500">
-                    {user.email}
-                  </p>
-                </div>
-              </div>
-
+              <UserSummary
+                email={user.email}
+                image={user.image}
+                name={user.name}
+              />
               <SignOutButton />
             </div>
           ) : (
