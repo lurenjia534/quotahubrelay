@@ -6,6 +6,8 @@ QuotaHub Relay is a private Next.js application protected by GitHub SSO. The cur
 
 - GitHub OAuth sign-in through Better Auth
 - Server-side email allowlist for private access
+- Server-managed quota provider subscriptions
+- Normalized quota snapshot API for linked clients
 - Protected `/dashboard` route
 - Local SQLite database by default
 - Postgres support for production through `DATABASE_URL`
@@ -132,6 +134,63 @@ AUTH_ALLOWED_EMAILS=you@example.com,admin@example.com
 ```
 
 GitHub accounts with private email settings are still supported because the GitHub provider requests `user:email` and reads the primary GitHub email.
+
+## Relay API
+
+The relay API is mounted under `/api/relay`. Browser requests use the authenticated GitHub session. Linked clients can use a dashboard-generated Bearer token:
+
+```txt
+Authorization: Bearer qhr_...
+```
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | `/api/relay/providers` | List supported quota providers and their credential fields. |
+| `GET` | `/api/relay/client-tokens` | List dashboard-generated client tokens. GitHub session only. |
+| `POST` | `/api/relay/client-tokens` | Create a client token. GitHub session only. |
+| `DELETE` | `/api/relay/client-tokens/:id` | Revoke a client token. GitHub session only. |
+| `GET` | `/api/relay/subscriptions` | List server-managed subscriptions for the signed-in user. |
+| `POST` | `/api/relay/subscriptions` | Validate provider credentials, create a subscription, and cache the first quota snapshot. |
+| `GET` | `/api/relay/subscriptions/:id` | Read one subscription and its latest cached snapshot. |
+| `DELETE` | `/api/relay/subscriptions/:id` | Delete a subscription and its cached snapshot. |
+| `POST` | `/api/relay/subscriptions/:id/refresh` | Refresh quota data with stored encrypted credentials. |
+
+Create subscription payload:
+
+```json
+{
+  "providerId": "kimi",
+  "customTitle": "Kimi work account",
+  "credentials": {
+    "values": {
+      "apiKey": "..."
+    }
+  }
+}
+```
+
+The current provider IDs are:
+
+- `codex`
+- `kimi`
+- `minimax`
+- `zai`
+- `zhipu`
+
+Provider credentials are encrypted at rest with `BETTER_AUTH_SECRET`.
+
+## Web Dashboard
+
+The `/dashboard` page uses the same relay API and lets an allowed GitHub user:
+
+- create server-managed provider subscriptions
+- validate credentials before saving
+- inspect latest normalized snapshot summaries
+- refresh snapshots
+- delete subscriptions
+- create and revoke Android client Bearer tokens
+
+This is the web/server counterpart to the Android app's `Remote client mode` setting.
 
 ## Database
 
