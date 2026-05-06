@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { auth } from "@/app/lib/auth";
+import { auth, isAuthorizedUser } from "@/app/lib/auth";
 
 export default async function DashboardPage() {
   const session = await auth.api.getSession({
@@ -10,6 +10,10 @@ export default async function DashboardPage() {
 
   if (!user) {
     redirect("/");
+  }
+
+  if (!isAuthorizedUser(user)) {
+    redirect("/?error=access_denied");
   }
 
   return (
