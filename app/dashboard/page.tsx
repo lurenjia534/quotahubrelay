@@ -26,8 +26,8 @@ export default async function DashboardPage() {
     <DashboardShell
       activeItem="overview"
       description="Manage provider credentials on the server and expose normalized quota snapshots for linked clients."
-      email={user.email}
       title="Overview"
+      user={user}
     >
       <div className="grid gap-4 border-b border-zinc-200 py-6 dark:border-zinc-800 sm:grid-cols-3">
         <StatusMetric label="Providers" value={providerDescriptors.length} />

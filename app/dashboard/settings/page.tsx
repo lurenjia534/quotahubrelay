@@ -25,8 +25,8 @@ export default async function DashboardSettingsPage() {
     <DashboardShell
       activeItem="settings"
       description="Manage relay client access and server coordination settings."
-      email={user.email}
       title="Settings"
+      user={user}
     >
       <div className="grid gap-4 border-b border-zinc-200 py-6 dark:border-zinc-800 sm:grid-cols-3">
         <StatusMetric label="Client tokens" value={clientTokens.length} />

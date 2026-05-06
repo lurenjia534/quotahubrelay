@@ -5,17 +5,23 @@ type DashboardShellProps = {
   activeItem: "overview" | "settings";
   children: React.ReactNode;
   description: string;
-  email?: string | null;
   title: string;
+  user: {
+    email?: string | null;
+    image?: string | null;
+    name?: string | null;
+  };
 };
 
 export function DashboardShell({
   activeItem,
   children,
   description,
-  email,
   title,
+  user,
 }: DashboardShellProps) {
+  const displayName = user.name || user.email || "User";
+
   return (
     <div className="min-h-full flex-1 bg-white dark:bg-black">
       <header className="border-b border-zinc-200 dark:border-zinc-800">
@@ -43,9 +49,12 @@ export function DashboardShell({
           </div>
 
           <div className="flex min-w-0 items-center gap-4">
-            <span className="hidden max-w-56 truncate text-sm text-zinc-500 dark:text-zinc-400 sm:block">
-              {email}
-            </span>
+            <div className="flex min-w-0 items-center gap-2">
+              <UserAvatar image={user.image} name={displayName} />
+              <span className="max-w-32 truncate text-sm font-medium text-zinc-700 dark:text-zinc-300 sm:max-w-44">
+                {displayName}
+              </span>
+            </div>
             <div className="w-28">
               <SignOutButton />
             </div>
@@ -65,6 +74,31 @@ export function DashboardShell({
 
         {children}
       </main>
+    </div>
+  );
+}
+
+function UserAvatar({
+  image,
+  name,
+}: {
+  image?: string | null;
+  name: string;
+}) {
+  if (image) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={image}
+        alt=""
+        className="h-8 w-8 shrink-0 rounded-full bg-zinc-100 object-cover dark:bg-zinc-900"
+      />
+    );
+  }
+
+  return (
+    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-medium text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
+      {name.slice(0, 1).toUpperCase()}
     </div>
   );
 }

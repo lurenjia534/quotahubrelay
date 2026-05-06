@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { auth, isAuthConfigured, isAuthorizedUser } from "@/app/lib/auth";
 import { SignInWithGithub } from "@/app/components/auth/sign-in-with-github";
 import { SignOutButton } from "@/app/components/auth/sign-out-button";
@@ -27,6 +28,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     : null;
   const isConfigured = isAuthConfigured();
   const isAuthorized = isAuthorizedUser(user);
+
+  if (user && isAuthorized) {
+    redirect("/dashboard");
+  }
 
   return (
     <div className="flex min-h-full flex-1 items-center justify-center bg-white dark:bg-black">
