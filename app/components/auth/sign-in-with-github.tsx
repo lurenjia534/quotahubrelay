@@ -19,7 +19,7 @@ export function SignInWithGithub({ disabled }: SignInWithGithubProps) {
         setIsPending(true);
         const { error } = await authClient.signIn.social({
           provider: "github",
-          callbackURL: "/",
+          callbackURL: "/dashboard",
         });
 
         if (error) {
