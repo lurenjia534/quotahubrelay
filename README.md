@@ -2,7 +2,7 @@
 
 QuotaHub Relay is the web and server component for QuotaHub. It centralizes provider credentials, fetches quota data from upstream AI services, normalizes that data into the same quota model used by the Android app, and exposes it through authenticated relay APIs.
 
-The Android app's `Remote client mode` is expected to connect to this server with a dashboard-generated Bearer token. The web dashboard is used for owner sign-in, provider subscription management, quota refreshes, and client token management.
+The Android app's `Remote client mode` is expected to connect to this server with a settings-generated Bearer token. The web dashboard is used for owner sign-in, provider subscription management, quota refreshes, and relay settings.
 
 ## Current Capabilities
 
@@ -117,7 +117,7 @@ Do not use `NEXT_PUBLIC_` for secrets.
 3. Add a provider subscription.
 4. Relay validates the credentials against the upstream provider.
 5. Relay saves encrypted credentials and the first normalized quota snapshot.
-6. Create an Android client token if a remote client should read relay data.
+6. Open `/dashboard/settings` and create an Android client token if a remote client should read relay data.
 7. Store the generated `qhr_...` token in the Android client. It is only shown once.
 
 ## Relay API
@@ -140,7 +140,7 @@ Client token management requires the GitHub dashboard session. Subscription and 
 | `GET` | `/api/relay/subscriptions/:id` | Session or Bearer | Read one subscription and latest snapshot. |
 | `DELETE` | `/api/relay/subscriptions/:id` | Session or Bearer | Delete a subscription and cached snapshot. |
 | `POST` | `/api/relay/subscriptions/:id/refresh` | Session or Bearer | Refresh quota data with stored encrypted credentials. |
-| `GET` | `/api/relay/client-tokens` | Session only | List dashboard-generated client tokens. |
+| `GET` | `/api/relay/client-tokens` | Session only | List settings-generated client tokens. |
 | `POST` | `/api/relay/client-tokens` | Session only | Create a client token. |
 | `DELETE` | `/api/relay/client-tokens/:id` | Session only | Revoke a client token. |
 
@@ -240,7 +240,7 @@ For each production deployment:
 5. Deploy the app.
 6. Sign in to `/dashboard`.
 7. Add provider subscriptions.
-8. Create Android client tokens as needed.
+8. Open `/dashboard/settings` and create Android client tokens as needed.
 
 GitHub OAuth Apps support a single callback URL. Use separate OAuth Apps for local and production.
 
@@ -276,7 +276,7 @@ app/
 - Rotate `GITHUB_CLIENT_SECRET` if exposed.
 - Rotate `BETTER_AUTH_SECRET` only with a plan, because existing encrypted provider credentials depend on it.
 - Treat `qhr_...` client tokens like passwords.
-- Revoke lost Android client tokens from `/dashboard`.
+- Revoke lost Android client tokens from `/dashboard/settings`.
 - Keep `AUTH_ALLOWED_EMAILS` narrow.
 - Do not reuse another deployment's GitHub OAuth App credentials.
 
@@ -308,7 +308,7 @@ Check the request header:
 Authorization: Bearer qhr_...
 ```
 
-If the token was revoked or lost, create a new one from `/dashboard`.
+If the token was revoked or lost, create a new one from `/dashboard/settings`.
 
 ### Provider subscription creation fails
 
