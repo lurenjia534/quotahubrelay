@@ -1,26 +1,40 @@
 # QuotaHub Relay
 
-QuotaHub Relay is a private Next.js application protected by GitHub SSO. The current app provides a GitHub sign-in flow, an email allowlist, and a protected dashboard foundation for future QuotaHub Relay features.
+QuotaHub Relay is the web and server component for QuotaHub. It centralizes provider credentials, fetches quota data from upstream AI services, normalizes that data into the same quota model used by the Android app, and exposes it through authenticated relay APIs.
 
-## Features
+The Android app's `Remote client mode` is expected to connect to this server with a dashboard-generated Bearer token. The web dashboard is used for owner sign-in, provider subscription management, quota refreshes, and client token management.
 
-- GitHub OAuth sign-in through Better Auth
-- Server-side email allowlist for private access
-- Server-managed quota provider subscriptions
-- Normalized quota snapshot API for linked clients
-- Protected `/dashboard` route
-- Local SQLite database by default
-- Postgres support for production through `DATABASE_URL`
-- Next.js App Router, React 19, Tailwind CSS 4
+## Current Capabilities
+
+- GitHub SSO for the web dashboard
+- Email allowlist for dashboard access
+- Server-managed provider subscriptions
+- Encrypted provider credential storage
+- Normalized quota snapshots
+- Dashboard-managed Android client Bearer tokens
+- SQLite for local development
+- Postgres support through `DATABASE_URL`
+
+## Supported Providers
+
+| Provider ID | Display name | Required credentials | Optional credentials |
+| --- | --- | --- | --- |
+| `codex` | OpenAI Codex | `accessToken` | `accountId` |
+| `kimi` | Kimi Coding Plan | `apiKey` | |
+| `minimax` | MiniMax Coding Plan | `apiKey` | |
+| `zai` | Z.ai | `authToken` | `baseUrl` |
+| `zhipu` | Zhipu BigModel | `authToken` | `baseUrl` |
+
+Provider credentials are validated before a subscription is saved. Saved credentials are encrypted at rest with a key derived from `BETTER_AUTH_SECRET`.
 
 ## Tech Stack
 
 - Next.js `16.2.4`
 - React `19.2.4`
 - Better Auth `1.6.9`
+- Tailwind CSS `4`
 - SQLite via `better-sqlite3`
 - Postgres via `pg`
-- Tailwind CSS `4`
 - ESLint `9`
 
 ## Requirements
@@ -28,9 +42,9 @@ QuotaHub Relay is a private Next.js application protected by GitHub SSO. The cur
 - Node.js 20 or newer
 - npm
 - A GitHub account
-- A GitHub OAuth App for each deployment URL
+- A GitHub OAuth App for each callback URL
 
-## Quick Start
+## Local Setup
 
 Install dependencies:
 
@@ -38,13 +52,38 @@ Install dependencies:
 npm install
 ```
 
-Create a local env file:
+Create local environment variables:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Create a GitHub OAuth App, fill `.env.local`, run the auth migration, then start the dev server:
+Create a GitHub OAuth App for local development:
+
+```txt
+Application name: QuotaHub Relay Local
+Homepage URL: http://localhost:3000
+Authorization callback URL: http://localhost:3000/api/auth/callback/github
+```
+
+Fill `.env.local`:
+
+```env
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+AUTH_ALLOWED_EMAILS=you@example.com
+BETTER_AUTH_SECRET=
+BETTER_AUTH_URL=http://localhost:3000
+SQLITE_DATABASE_PATH=auth.sqlite
+```
+
+Generate a local auth secret:
+
+```bash
+openssl rand -hex 32
+```
+
+Run Better Auth migrations and start the app:
 
 ```bash
 npm run auth:migrate
@@ -57,105 +96,55 @@ Open:
 http://localhost:3000
 ```
 
-## GitHub OAuth Setup
-
-Each person or environment deploying this app should create its own GitHub OAuth App. Do not reuse someone else's `GITHUB_CLIENT_ID` or `GITHUB_CLIENT_SECRET`.
-
-Create an OAuth App here:
-
-```txt
-GitHub -> Settings -> Developer settings -> OAuth Apps -> New OAuth App
-```
-
-For local development with the default Next.js port:
-
-```txt
-Application name: QuotaHub Relay Local
-Homepage URL: http://localhost:3000
-Authorization callback URL: http://localhost:3000/api/auth/callback/github
-```
-
-For production:
-
-```txt
-Application name: QuotaHub Relay
-Homepage URL: https://your-domain.com
-Authorization callback URL: https://your-domain.com/api/auth/callback/github
-```
-
-GitHub OAuth Apps support a single callback URL. If you need both local and production login, create two OAuth Apps.
-
 ## Environment Variables
-
-Copy `.env.example` to `.env.local` for local development.
-
-```env
-GITHUB_CLIENT_ID=
-GITHUB_CLIENT_SECRET=
-AUTH_ALLOWED_EMAILS=
-BETTER_AUTH_SECRET=
-BETTER_AUTH_URL=http://localhost:3000
-SQLITE_DATABASE_PATH=auth.sqlite
-# DATABASE_URL=postgres://user:password@host:5432/database
-```
-
-### Variable Reference
 
 | Variable | Required | Description |
 | --- | --- | --- |
-| `GITHUB_CLIENT_ID` | Yes | Client ID from your GitHub OAuth App. |
-| `GITHUB_CLIENT_SECRET` | Yes | Client Secret from your GitHub OAuth App. Never commit it. |
-| `AUTH_ALLOWED_EMAILS` | Yes | Comma-separated allowlist of GitHub account emails. Example: `me@example.com,admin@example.com`. |
-| `BETTER_AUTH_SECRET` | Yes | Secret used by Better Auth for signing/encryption. Generate one per environment. |
-| `BETTER_AUTH_URL` | Yes | Public base URL of this app. Local default: `http://localhost:3000`. |
-| `SQLITE_DATABASE_PATH` | Local | SQLite file path used when `DATABASE_URL` is unset. |
-| `DATABASE_URL` | Production | Postgres connection string. When set, the app uses Postgres instead of SQLite. |
+| `GITHUB_CLIENT_ID` | Yes | Client ID from the GitHub OAuth App. |
+| `GITHUB_CLIENT_SECRET` | Yes | Client Secret from the GitHub OAuth App. |
+| `AUTH_ALLOWED_EMAILS` | Yes | Comma-separated dashboard allowlist. Example: `you@example.com,admin@example.com`. |
+| `BETTER_AUTH_SECRET` | Yes | Secret used by Better Auth and relay credential encryption. Use a unique value per environment. |
+| `BETTER_AUTH_URL` | Yes | Public base URL of this deployment. Local default: `http://localhost:3000`. |
+| `SQLITE_DATABASE_PATH` | Local | SQLite database path when `DATABASE_URL` is unset. |
+| `DATABASE_URL` | Production | Postgres connection string. When set, relay and auth data use Postgres. |
 
-Generate a local auth secret:
+Do not use `NEXT_PUBLIC_` for secrets.
 
-```bash
-openssl rand -hex 32
-```
+## Dashboard Flow
 
-## Access Control
-
-Access is controlled by `AUTH_ALLOWED_EMAILS`.
-
-The app fails closed:
-
-- If `AUTH_ALLOWED_EMAILS` is empty, GitHub SSO is treated as not configured.
-- If a GitHub user's email is not in the allowlist, sign-in is denied.
-- Existing sessions are checked again before entering `/dashboard`.
-
-Example:
-
-```env
-AUTH_ALLOWED_EMAILS=you@example.com,admin@example.com
-```
-
-GitHub accounts with private email settings are still supported because the GitHub provider requests `user:email` and reads the primary GitHub email.
+1. Sign in with an allowed GitHub account.
+2. Open `/dashboard`.
+3. Add a provider subscription.
+4. Relay validates the credentials against the upstream provider.
+5. Relay saves encrypted credentials and the first normalized quota snapshot.
+6. Create an Android client token if a remote client should read relay data.
+7. Store the generated `qhr_...` token in the Android client. It is only shown once.
 
 ## Relay API
 
-The relay API is mounted under `/api/relay`. Browser requests use the authenticated GitHub session. Linked clients can use a dashboard-generated Bearer token:
+Relay endpoints are mounted under `/api/relay`.
+
+Browser requests use the GitHub dashboard session. Android or other linked clients use:
 
 ```txt
 Authorization: Bearer qhr_...
 ```
 
-| Method | Path | Description |
-| --- | --- | --- |
-| `GET` | `/api/relay/providers` | List supported quota providers and their credential fields. |
-| `GET` | `/api/relay/client-tokens` | List dashboard-generated client tokens. GitHub session only. |
-| `POST` | `/api/relay/client-tokens` | Create a client token. GitHub session only. |
-| `DELETE` | `/api/relay/client-tokens/:id` | Revoke a client token. GitHub session only. |
-| `GET` | `/api/relay/subscriptions` | List server-managed subscriptions for the signed-in user. |
-| `POST` | `/api/relay/subscriptions` | Validate provider credentials, create a subscription, and cache the first quota snapshot. |
-| `GET` | `/api/relay/subscriptions/:id` | Read one subscription and its latest cached snapshot. |
-| `DELETE` | `/api/relay/subscriptions/:id` | Delete a subscription and its cached snapshot. |
-| `POST` | `/api/relay/subscriptions/:id/refresh` | Refresh quota data with stored encrypted credentials. |
+Client token management requires the GitHub dashboard session. Subscription and provider read/refresh endpoints accept either a dashboard session or a valid Bearer token.
 
-Create subscription payload:
+| Method | Path | Auth | Description |
+| --- | --- | --- | --- |
+| `GET` | `/api/relay/providers` | Session or Bearer | List provider descriptors and credential fields. |
+| `GET` | `/api/relay/subscriptions` | Session or Bearer | List server-managed subscriptions and latest snapshots. |
+| `POST` | `/api/relay/subscriptions` | Session or Bearer | Validate credentials, create a subscription, and cache the first snapshot. |
+| `GET` | `/api/relay/subscriptions/:id` | Session or Bearer | Read one subscription and latest snapshot. |
+| `DELETE` | `/api/relay/subscriptions/:id` | Session or Bearer | Delete a subscription and cached snapshot. |
+| `POST` | `/api/relay/subscriptions/:id/refresh` | Session or Bearer | Refresh quota data with stored encrypted credentials. |
+| `GET` | `/api/relay/client-tokens` | Session only | List dashboard-generated client tokens. |
+| `POST` | `/api/relay/client-tokens` | Session only | Create a client token. |
+| `DELETE` | `/api/relay/client-tokens/:id` | Session only | Revoke a client token. |
+
+Create subscription example:
 
 ```json
 {
@@ -169,50 +158,91 @@ Create subscription payload:
 }
 ```
 
-The current provider IDs are:
+## Quota Snapshot Model
 
-- `codex`
-- `kimi`
-- `minimax`
-- `zai`
-- `zhipu`
+Relay normalizes upstream provider responses into the Android app's quota model:
 
-Provider credentials are encrypted at rest with `BETTER_AUTH_SECRET`.
+- `QuotaSnapshot`
+- `QuotaResource`
+- `QuotaWindow`
 
-## Web Dashboard
+Resource types:
 
-The `/dashboard` page uses the same relay API and lets an allowed GitHub user:
+- `Model`
+- `Plan`
+- `Feature`
 
-- create server-managed provider subscriptions
-- validate credentials before saving
-- inspect latest normalized snapshot summaries
-- refresh snapshots
-- delete subscriptions
-- create and revoke Android client Bearer tokens
+Window scopes:
 
-This is the web/server counterpart to the Android app's `Remote client mode` setting.
+- `Interval`
+- `Daily`
+- `Weekly`
+- `Monthly`
+- `Rolling`
+
+Units:
+
+- `Request`
+- `Token`
+- `Credit`
+- `Minute`
+- `Percent`
 
 ## Database
 
-Local development defaults to SQLite:
-
-```env
-SQLITE_DATABASE_PATH=auth.sqlite
-```
-
-Run Better Auth migrations after configuring env vars:
+Better Auth tables are managed by:
 
 ```bash
 npm run auth:migrate
 ```
 
-For production, set `DATABASE_URL` to a Postgres connection string:
+Relay tables are created automatically at runtime:
+
+- `quota_subscription`
+- `quota_snapshot`
+- `quota_client_token`
+
+Local development uses SQLite unless `DATABASE_URL` is set:
+
+```env
+SQLITE_DATABASE_PATH=auth.sqlite
+```
+
+Production should use Postgres:
 
 ```env
 DATABASE_URL=postgres://user:password@host:5432/database
 ```
 
-Run the migration against the production database before using the deployed app.
+## Deployment
+
+For each production deployment:
+
+1. Create a production GitHub OAuth App.
+2. Set its callback URL:
+
+   ```txt
+   https://your-domain.com/api/auth/callback/github
+   ```
+
+3. Set production environment variables:
+
+   ```env
+   GITHUB_CLIENT_ID=
+   GITHUB_CLIENT_SECRET=
+   AUTH_ALLOWED_EMAILS=
+   BETTER_AUTH_SECRET=
+   BETTER_AUTH_URL=https://your-domain.com
+   DATABASE_URL=
+   ```
+
+4. Run `npm run auth:migrate` against the production database.
+5. Deploy the app.
+6. Sign in to `/dashboard`.
+7. Add provider subscriptions.
+8. Create Android client tokens as needed.
+
+GitHub OAuth Apps support a single callback URL. Use separate OAuth Apps for local and production.
 
 ## Scripts
 
@@ -229,54 +259,32 @@ Run the migration against the production database before using the deployed app.
 ```txt
 app/
   api/auth/[...all]/route.ts       Better Auth route handler
-  actions/auth.ts                  Server action for sign out
-  components/auth/                 Auth UI components
-  dashboard/page.tsx               Protected dashboard page
-  lib/auth.ts                      Server-side Better Auth config
-  lib/auth-client.ts               Client-side Better Auth client
+  api/relay/                       Relay API
+  actions/auth.ts                  Sign-out server action
+  components/auth/                 Auth UI
+  components/quota/                Dashboard quota management UI
+  dashboard/page.tsx               Protected dashboard
+  lib/auth.ts                      Better Auth server config and allowlist checks
+  lib/auth-client.ts               Better Auth browser client
+  lib/quota/                       Provider adapters, encrypted store, API auth helpers, quota types
   page.tsx                         Sign-in page
 ```
 
-## Deployment
-
-For Vercel or another production host:
-
-1. Create a production GitHub OAuth App.
-2. Set the production callback URL:
-
-   ```txt
-   https://your-domain.com/api/auth/callback/github
-   ```
-
-3. Configure production environment variables:
-
-   ```env
-   GITHUB_CLIENT_ID=
-   GITHUB_CLIENT_SECRET=
-   AUTH_ALLOWED_EMAILS=
-   BETTER_AUTH_SECRET=
-   BETTER_AUTH_URL=https://your-domain.com
-   DATABASE_URL=
-   ```
-
-4. Run Better Auth migrations against the production database.
-5. Deploy the app.
-
-If your deployment URL changes, update both `BETTER_AUTH_URL` and the GitHub OAuth App callback URL.
-
 ## Security Notes
 
-- Never commit `.env.local` or any real secret.
-- Rotate `GITHUB_CLIENT_SECRET` if it was shared or exposed.
-- Use a unique `BETTER_AUTH_SECRET` per environment.
-- Keep `AUTH_ALLOWED_EMAILS` as narrow as possible.
+- Never commit `.env.local` or real secrets.
+- Rotate `GITHUB_CLIENT_SECRET` if exposed.
+- Rotate `BETTER_AUTH_SECRET` only with a plan, because existing encrypted provider credentials depend on it.
+- Treat `qhr_...` client tokens like passwords.
+- Revoke lost Android client tokens from `/dashboard`.
+- Keep `AUTH_ALLOWED_EMAILS` narrow.
 - Do not reuse another deployment's GitHub OAuth App credentials.
 
 ## Troubleshooting
 
 ### `GitHub SSO is not configured`
 
-Check that all required variables are set:
+Check:
 
 ```env
 GITHUB_CLIENT_ID=
@@ -290,11 +298,25 @@ BETTER_AUTH_URL=
 
 ### `Access denied`
 
-The signed-in GitHub account email is not listed in `AUTH_ALLOWED_EMAILS`. Add the primary GitHub email to the allowlist and restart the server.
+The signed-in GitHub email is not listed in `AUTH_ALLOWED_EMAILS`.
 
-### GitHub redirects back with an OAuth error
+### Android client receives `401`
 
-Verify the callback URL in the GitHub OAuth App exactly matches your app URL:
+Check the request header:
+
+```txt
+Authorization: Bearer qhr_...
+```
+
+If the token was revoked or lost, create a new one from `/dashboard`.
+
+### Provider subscription creation fails
+
+The relay validates upstream credentials before saving. Confirm the selected provider fields match [Supported Providers](#supported-providers), then verify that the upstream account can access its usage endpoint.
+
+### GitHub OAuth redirects fail
+
+The OAuth callback URL must exactly match the deployment URL:
 
 ```txt
 http://localhost:3000/api/auth/callback/github
@@ -306,19 +328,11 @@ or:
 https://your-domain.com/api/auth/callback/github
 ```
 
-### Local dev server uses another port
-
-If Next.js starts on `3001` because `3000` is already in use, GitHub OAuth will fail unless you also update:
-
-- `BETTER_AUTH_URL`
-- GitHub OAuth App `Homepage URL`
-- GitHub OAuth App `Authorization callback URL`
-
-The simplest fix is usually to stop the process using port `3000` and keep the default local OAuth settings.
+If Next.js starts on another port, update `BETTER_AUTH_URL` and the GitHub OAuth App callback URL, or free port `3000`.
 
 ### `next/font` fails during build
 
-This app uses Google-hosted Geist fonts through `next/font/google`. A production build needs network access to fetch those font files unless the app is changed to use local fonts.
+This app uses `next/font/google` for Geist fonts. Production builds need network access to fetch font files unless the app is changed to local fonts.
 
 ## Development Notes
 
