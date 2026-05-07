@@ -3,7 +3,10 @@ import { redirect } from "next/navigation";
 import { DashboardShell } from "@/app/components/dashboard/dashboard-shell";
 import { ClientAccessSettings } from "@/app/components/quota/client-access-settings";
 import { auth, isAuthorizedUser } from "@/app/lib/auth";
-import { listClientTokens } from "@/app/lib/quota/store";
+import {
+  getRelaySettings,
+  listClientTokens,
+} from "@/app/lib/quota/store";
 
 export default async function DashboardSettingsPage() {
   const session = await auth.api.getSession({
@@ -20,6 +23,7 @@ export default async function DashboardSettingsPage() {
   }
 
   const clientTokens = await listClientTokens(user.id);
+  const relaySettings = await getRelaySettings(user.id);
 
   return (
     <DashboardShell
@@ -34,11 +38,19 @@ export default async function DashboardSettingsPage() {
           label="Active devices"
           value={clientTokens.filter((token) => token.lastUsedAt).length}
         />
-        <StatusMetric label="Access mode" value="Bearer" />
+        <StatusMetric
+          label="Remote client"
+          value={relaySettings.remoteClientAccessEnabled ? "On" : "Off"}
+        />
       </div>
 
       <div className="py-8">
-        <ClientAccessSettings initialClientTokens={clientTokens} />
+        <ClientAccessSettings
+          initialClientTokens={clientTokens}
+          initialRemoteClientAccessEnabled={
+            relaySettings.remoteClientAccessEnabled
+          }
+        />
       </div>
     </DashboardShell>
   );

@@ -8,6 +8,7 @@ import {
   CapturedQuotaSnapshot,
   QuotaSnapshot,
   QuotaSubscription,
+  RelaySettings,
   RelayClientToken,
   SecretBundle,
 } from "@/app/lib/quota/types";
@@ -34,6 +35,12 @@ type ClientTokenRow = {
   token_prefix: string;
   created_at: number;
   last_used_at: number | null;
+};
+
+type RelaySettingsRow = {
+  user_id: string;
+  remote_client_access_enabled: boolean | number;
+  updated_at: number;
 };
 
 const sqlite = process.env.DATABASE_URL
@@ -170,6 +177,37 @@ export async function listClientTokens(userId: string): Promise<RelayClientToken
   return rows.map(rowToClientToken);
 }
 
+export async function getRelaySettings(userId: string): Promise<RelaySettings> {
+  await ensureQuotaSchema();
+  const row = await getRow<RelaySettingsRow>(
+    "select * from quota_relay_settings where user_id = $1",
+    [userId],
+  );
+
+  return {
+    remoteClientAccessEnabled: Boolean(row?.remote_client_access_enabled),
+  };
+}
+
+export async function updateRelaySettings(
+  userId: string,
+  settings: RelaySettings,
+): Promise<RelaySettings> {
+  await ensureQuotaSchema();
+  const now = Date.now();
+  await execute(
+    `insert into quota_relay_settings (
+       user_id, remote_client_access_enabled, updated_at
+     ) values ($1, $2, $3)
+     on conflict (user_id) do update set
+       remote_client_access_enabled = excluded.remote_client_access_enabled,
+       updated_at = excluded.updated_at`,
+    [userId, settings.remoteClientAccessEnabled ? 1 : 0, now],
+  );
+
+  return getRelaySettings(userId);
+}
+
 export async function createClientToken(userId: string, name: string) {
   await ensureQuotaSchema();
   const token = `qhr_${randomBytes(32).toString("base64url")}`;
@@ -208,18 +246,26 @@ export async function deleteClientToken(userId: string, id: string) {
   return true;
 }
 
-export async function findUserIdByClientToken(token: string) {
+export async function findClientTokenAuth(token: string) {
   await ensureQuotaSchema();
   const row = await getRow<ClientTokenRow>(
     "select * from quota_client_token where token_hash = $1",
     [tokenHash(token)],
   );
   if (!row) return null;
+
+  return {
+    tokenId: row.id,
+    userId: row.user_id,
+  };
+}
+
+export async function markClientTokenUsed(tokenId: string) {
+  await ensureQuotaSchema();
   await execute("update quota_client_token set last_used_at = $1 where id = $2", [
     Date.now(),
-    row.id,
+    tokenId,
   ]);
-  return row.user_id;
 }
 
 async function upsertSnapshot(
@@ -317,6 +363,13 @@ async function ensureQuotaSchema() {
     await pgPool.query(
       "create index if not exists quota_client_token_user_id_idx on quota_client_token(user_id)",
     );
+    await pgPool.query(`
+      create table if not exists quota_relay_settings (
+        user_id text primary key,
+        remote_client_access_enabled integer not null default 0,
+        updated_at bigint not null
+      )
+    `);
   } else {
     sqlite
       ?.prepare(
@@ -366,6 +419,15 @@ async function ensureQuotaSchema() {
     sqlite
       ?.prepare(
         "create index if not exists quota_client_token_user_id_idx on quota_client_token(user_id)",
+      )
+      .run();
+    sqlite
+      ?.prepare(
+        `create table if not exists quota_relay_settings (
+          user_id text primary key,
+          remote_client_access_enabled integer not null default 0,
+          updated_at integer not null
+        )`,
       )
       .run();
   }

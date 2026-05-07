@@ -5,16 +5,44 @@ import { RelayClientToken } from "@/app/lib/quota/types";
 
 type ClientAccessSettingsProps = {
   initialClientTokens: RelayClientToken[];
+  initialRemoteClientAccessEnabled: boolean;
 };
 
 export function ClientAccessSettings({
   initialClientTokens,
+  initialRemoteClientAccessEnabled,
 }: ClientAccessSettingsProps) {
   const [clientTokens, setClientTokens] = useState(initialClientTokens);
+  const [remoteClientAccessEnabled, setRemoteClientAccessEnabled] = useState(
+    initialRemoteClientAccessEnabled,
+  );
   const [newClientToken, setNewClientToken] = useState<string | null>(null);
   const [clientTokenName, setClientTokenName] = useState("Android client");
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  async function updateRemoteClientAccess(enabled: boolean) {
+    const previousValue = remoteClientAccessEnabled;
+    setRemoteClientAccessEnabled(enabled);
+    setPendingAction("settings");
+    setMessage(null);
+
+    const response = await fetch("/api/relay/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ remoteClientAccessEnabled: enabled }),
+    });
+    const payload = await response.json();
+    setPendingAction(null);
+
+    if (!response.ok) {
+      setRemoteClientAccessEnabled(previousValue);
+      setMessage(payload.error?.message ?? "Failed to update relay settings.");
+      return;
+    }
+
+    setRemoteClientAccessEnabled(payload.settings.remoteClientAccessEnabled);
+  }
 
   async function createClientToken() {
     setPendingAction("create");
@@ -57,14 +85,77 @@ export function ClientAccessSettings({
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,380px)_1fr]">
+    <div className="space-y-8">
+      <section className="border-t border-zinc-200 pt-6 dark:border-zinc-800">
+        <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-start">
+          <div className="max-w-2xl">
+            <h2 className="text-base font-medium text-zinc-950 dark:text-zinc-50">
+              Server coordination
+            </h2>
+            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+              Gate remote client access before this server accepts Bearer-token
+              relay requests.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            role="switch"
+            aria-checked={remoteClientAccessEnabled}
+            disabled={pendingAction === "settings"}
+            onClick={() =>
+              updateRemoteClientAccess(!remoteClientAccessEnabled)
+            }
+            className="inline-flex items-center gap-3 justify-self-start text-left disabled:cursor-not-allowed disabled:opacity-60 lg:justify-self-end"
+          >
+            <span
+              className={`flex h-6 w-11 shrink-0 items-center border transition ${
+                remoteClientAccessEnabled
+                  ? "border-zinc-950 bg-zinc-950 dark:border-zinc-50 dark:bg-zinc-50"
+                  : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-black"
+              }`}
+            >
+              <span
+                className={`block h-4 w-4 bg-zinc-300 transition dark:bg-zinc-600 ${
+                  remoteClientAccessEnabled
+                    ? "translate-x-5 bg-white dark:bg-zinc-950"
+                    : "translate-x-1"
+                }`}
+              />
+            </span>
+            <span>
+              <span className="block text-sm font-medium text-zinc-950 dark:text-zinc-50">
+                Remote client mode
+              </span>
+              <span className="block max-w-sm text-sm text-zinc-500 dark:text-zinc-400">
+                Allow trusted QuotaHub Android clients to link to this web server
+                after strict authentication.
+              </span>
+            </span>
+          </button>
+        </div>
+
+        <div className="mt-5 border-y border-zinc-200 py-4 dark:border-zinc-800">
+          <p className="text-sm font-medium text-zinc-950 dark:text-zinc-50">
+            {remoteClientAccessEnabled
+              ? "Client endpoints armed"
+              : "Web dashboard only"}
+          </p>
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+            {remoteClientAccessEnabled
+              ? "Bearer-token relay endpoints are available to generated client tokens."
+              : "Bearer-token relay endpoints are closed. QuotaHub Relay still works as a web dashboard."}
+          </p>
+        </div>
+      </section>
+
       <section className="border-t border-zinc-200 pt-6 dark:border-zinc-800">
         <h2 className="text-base font-medium text-zinc-950 dark:text-zinc-50">
           Android client access
         </h2>
         <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
           Generate a Bearer token for QuotaHub Android remote client mode.
-          Tokens can read relay endpoints for this account.
+          Tokens can read relay endpoints only when remote client mode is on.
         </p>
 
         <div className="mt-5 space-y-4">

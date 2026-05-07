@@ -2,7 +2,11 @@ import "server-only";
 
 import { auth, isAuthorizedUser } from "@/app/lib/auth";
 import { ProviderSyncError } from "@/app/lib/quota/types";
-import { findUserIdByClientToken } from "@/app/lib/quota/store";
+import {
+  findClientTokenAuth,
+  getRelaySettings,
+  markClientTokenUsed,
+} from "@/app/lib/quota/store";
 
 export type ApiUser = {
   id: string;
@@ -42,12 +46,24 @@ async function sessionUserFromRequest(request: Request): Promise<ApiUser | Respo
   };
 }
 
-async function bearerUserFromRequest(request: Request): Promise<ApiUser | null> {
+async function bearerUserFromRequest(request: Request): Promise<ApiUser | Response | null> {
   const authorization = request.headers.get("authorization");
   const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
   if (!token) return null;
-  const userId = await findUserIdByClientToken(token);
-  return userId ? { id: userId } : null;
+  const clientToken = await findClientTokenAuth(token);
+  if (!clientToken) return null;
+
+  const settings = await getRelaySettings(clientToken.userId);
+  if (!settings.remoteClientAccessEnabled) {
+    return jsonError(
+      "remote_client_disabled",
+      "Remote client mode is disabled for this account.",
+      403,
+    );
+  }
+
+  await markClientTokenUsed(clientToken.tokenId);
+  return { id: clientToken.userId };
 }
 
 export function jsonError(code: string, message: string, status: number) {

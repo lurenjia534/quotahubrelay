@@ -100,6 +100,10 @@ export type RelayClientToken = {
   lastUsedAt: number | null;
 };
 
+export type RelaySettings = {
+  remoteClientAccessEnabled: boolean;
+};
+
 export const quotaBuckets = {
   budget: "budget",
   tokens: "tokens",

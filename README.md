@@ -117,8 +117,9 @@ Do not use `NEXT_PUBLIC_` for secrets.
 3. Add a provider subscription.
 4. Relay validates the credentials against the upstream provider.
 5. Relay saves encrypted credentials and the first normalized quota snapshot.
-6. Open `/dashboard/settings` and create an Android client token if a remote client should read relay data.
-7. Store the generated `qhr_...` token in the Android client. It is only shown once.
+6. Open `/dashboard/settings` and turn on Remote client mode if a remote client should read relay data.
+7. Create an Android client token.
+8. Store the generated `qhr_...` token in the Android client. It is only shown once.
 
 ## Relay API
 
@@ -130,6 +131,8 @@ Browser requests use the GitHub dashboard session. Android or other linked clien
 Authorization: Bearer qhr_...
 ```
 
+Bearer-token access is disabled by default. Turn on Remote client mode in `/dashboard/settings` before exposing relay endpoints to linked clients. When it is off, the web dashboard keeps working and Bearer-token requests are rejected.
+
 Client token management requires the GitHub dashboard session. Subscription and provider read/refresh endpoints accept either a dashboard session or a valid Bearer token.
 
 | Method | Path | Auth | Description |
@@ -140,6 +143,8 @@ Client token management requires the GitHub dashboard session. Subscription and 
 | `GET` | `/api/relay/subscriptions/:id` | Session or Bearer | Read one subscription and latest snapshot. |
 | `DELETE` | `/api/relay/subscriptions/:id` | Session or Bearer | Delete a subscription and cached snapshot. |
 | `POST` | `/api/relay/subscriptions/:id/refresh` | Session or Bearer | Refresh quota data with stored encrypted credentials. |
+| `GET` | `/api/relay/settings` | Session only | Read relay settings, including Remote client mode. |
+| `PATCH` | `/api/relay/settings` | Session only | Update relay settings. |
 | `GET` | `/api/relay/client-tokens` | Session only | List settings-generated client tokens. |
 | `POST` | `/api/relay/client-tokens` | Session only | Create a client token. |
 | `DELETE` | `/api/relay/client-tokens/:id` | Session only | Revoke a client token. |
@@ -201,6 +206,7 @@ Relay tables are created automatically at runtime:
 - `quota_subscription`
 - `quota_snapshot`
 - `quota_client_token`
+- `quota_relay_settings`
 
 Local development uses SQLite unless `DATABASE_URL` is set:
 
@@ -240,7 +246,7 @@ For each production deployment:
 5. Deploy the app.
 6. Sign in to `/dashboard`.
 7. Add provider subscriptions.
-8. Open `/dashboard/settings` and create Android client tokens as needed.
+8. Open `/dashboard/settings`, enable Remote client mode if Android clients should connect, and create Android client tokens as needed.
 
 GitHub OAuth Apps support a single callback URL. Use separate OAuth Apps for local and production.
 
