@@ -7,13 +7,18 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
   Field,
   FieldContent,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-  FieldLegend,
-  FieldSet,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -116,158 +121,171 @@ export function ClientAccessSettings({
   }
 
   return (
-    <div className="space-y-10">
-      <FieldSet className="border-t pt-6">
-        <FieldLegend>Remote access</FieldLegend>
-        <FieldDescription>
-          Control whether generated Bearer tokens can reach relay endpoints.
-        </FieldDescription>
-
-        <FieldGroup className="gap-0">
-          <Field
-            orientation="responsive"
-            className="border-y py-4 @md/field-group:items-center"
-          >
-            <FieldContent>
-              <FieldLabel htmlFor="remote-client-access">
-                Remote client mode
-              </FieldLabel>
-              <FieldDescription>
-                {remoteClientAccessEnabled
-                  ? "Client tokens can read relay endpoints."
-                  : "Relay endpoints reject client-token requests."}
-              </FieldDescription>
-            </FieldContent>
-
-            <div className="flex items-center gap-3">
-              <Badge variant={remoteClientAccessEnabled ? "default" : "secondary"}>
-                {remoteClientAccessEnabled ? "Enabled" : "Disabled"}
-              </Badge>
-              <Switch
-                id="remote-client-access"
-                checked={remoteClientAccessEnabled}
-                disabled={pendingAction === "settings"}
-                onCheckedChange={updateRemoteClientAccess}
-              />
-            </div>
-          </Field>
-        </FieldGroup>
-      </FieldSet>
-
-      <FieldSet className="border-t pt-6">
-        <FieldLegend>Client tokens</FieldLegend>
-        <FieldDescription>
-          Create scoped tokens for trusted Android clients. The full token is
-          shown once.
-        </FieldDescription>
-
-        <form onSubmit={createClientToken} className="border-y py-4">
-          <FieldGroup className="gap-3 @container/field-group sm:flex-row sm:items-end">
-            <Field className="min-w-0 flex-1">
-              <FieldLabel htmlFor="client-token-name">Token name</FieldLabel>
-              <Input
-                id="client-token-name"
-                value={clientTokenName}
-                onChange={(event) => setClientTokenName(event.target.value)}
-                placeholder="Android client"
-              />
-            </Field>
-
-            <Button
-              type="submit"
-              disabled={pendingAction === "create"}
-              className="w-full sm:w-auto"
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Remote access</CardTitle>
+          <CardDescription>
+            Control whether generated Bearer tokens can reach relay endpoints.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FieldGroup>
+            <Field
+              orientation="responsive"
+              className="@md/field-group:items-center"
             >
-              {pendingAction === "create" ? "Creating..." : "Create token"}
-            </Button>
+              <FieldContent>
+                <FieldLabel htmlFor="remote-client-access">
+                  Remote client mode
+                </FieldLabel>
+                <FieldDescription>
+                  {remoteClientAccessEnabled
+                    ? "Client tokens can read relay endpoints."
+                    : "Relay endpoints reject client-token requests."}
+                </FieldDescription>
+              </FieldContent>
+
+              <div className="flex items-center gap-3">
+                <Badge
+                  variant={remoteClientAccessEnabled ? "default" : "secondary"}
+                >
+                  {remoteClientAccessEnabled ? "Enabled" : "Disabled"}
+                </Badge>
+                <Switch
+                  id="remote-client-access"
+                  checked={remoteClientAccessEnabled}
+                  disabled={pendingAction === "settings"}
+                  onCheckedChange={updateRemoteClientAccess}
+                />
+              </div>
+            </Field>
           </FieldGroup>
-        </form>
+        </CardContent>
+      </Card>
 
-        {newClientToken ? (
-          <Alert className="border-amber-500/30 bg-amber-500/10">
-            <AlertTitle className="text-amber-900 dark:text-amber-100">
-              Copy this token now
-            </AlertTitle>
-            <AlertDescription className="text-amber-900/80 dark:text-amber-100/80">
-              It will not be shown again.
-            </AlertDescription>
-            <code className="mt-3 block break-all rounded-md bg-background px-2.5 py-2 font-mono text-xs text-foreground ring-1 ring-border">
-              {newClientToken}
-            </code>
-          </Alert>
-        ) : null}
+      <Card>
+        <CardHeader>
+          <CardTitle>Client tokens</CardTitle>
+          <CardDescription>
+            Create scoped tokens for trusted Android clients. The full token is
+            shown once.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <form onSubmit={createClientToken}>
+            <FieldGroup className="gap-3 @container/field-group sm:flex-row sm:items-end">
+              <Field className="min-w-0 flex-1">
+                <FieldLabel htmlFor="client-token-name">Token name</FieldLabel>
+                <Input
+                  id="client-token-name"
+                  value={clientTokenName}
+                  onChange={(event) => setClientTokenName(event.target.value)}
+                  placeholder="Android client"
+                />
+              </Field>
 
-        {message ? (
-          <Alert variant="destructive">
-            <AlertDescription>{message}</AlertDescription>
-          </Alert>
-        ) : null}
+              <Button
+                type="submit"
+                disabled={pendingAction === "create"}
+                className="w-full sm:w-auto"
+              >
+                {pendingAction === "create" ? "Creating..." : "Create token"}
+              </Button>
+            </FieldGroup>
+          </form>
 
-        <div className="space-y-3">
-          <div className="grid gap-1 sm:grid-cols-[1fr_auto] sm:items-end">
-            <div>
-              <h3 className="text-sm font-medium text-foreground">
-                Active tokens
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Revoke tokens that no longer match a trusted device.
+          {newClientToken ? (
+            <Alert className="border-amber-500/30 bg-amber-500/10">
+              <AlertTitle className="text-amber-900 dark:text-amber-100">
+                Copy this token now
+              </AlertTitle>
+              <AlertDescription className="text-amber-900/80 dark:text-amber-100/80">
+                It will not be shown again.
+              </AlertDescription>
+              <code className="mt-3 block break-all rounded-md bg-background px-2.5 py-2 font-mono text-xs text-foreground ring-1 ring-border">
+                {newClientToken}
+              </code>
+            </Alert>
+          ) : null}
+
+          {message ? (
+            <Alert variant="destructive">
+              <AlertDescription>{message}</AlertDescription>
+            </Alert>
+          ) : null}
+
+          <div className="space-y-3">
+            <div className="grid gap-1 sm:grid-cols-[1fr_auto] sm:items-end">
+              <div>
+                <h3 className="text-sm font-medium text-foreground">
+                  Active tokens
+                </h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Revoke tokens that no longer match a trusted device.
+                </p>
+              </div>
+              <p className="text-sm tabular-nums text-muted-foreground">
+                {clientTokens.length} total
               </p>
             </div>
-            <p className="text-sm tabular-nums text-muted-foreground">
-              {clientTokens.length} total
-            </p>
+
+            <ItemGroup className="gap-0 divide-y rounded-lg border">
+              {clientTokens.length === 0 ? (
+                <Item
+                  className="rounded-none border-0 px-4 py-10"
+                  role="listitem"
+                >
+                  <ItemContent>
+                    <ItemTitle>No client tokens</ItemTitle>
+                    <ItemDescription>
+                      Create a token when a trusted device is ready to connect.
+                    </ItemDescription>
+                  </ItemContent>
+                </Item>
+              ) : (
+                clientTokens.map((token) => {
+                  const isRevoking = pendingAction === `delete:${token.id}`;
+
+                  return (
+                    <Item
+                      key={token.id}
+                      className="rounded-none border-0 px-4 py-4"
+                      role="listitem"
+                    >
+                      <ItemContent className="min-w-0">
+                        <ItemTitle className="max-w-full">
+                          <span className="truncate">{token.name}</span>
+                          {token.lastUsedAt ? (
+                            <Badge variant="outline">Active</Badge>
+                          ) : (
+                            <Badge variant="secondary">Unused</Badge>
+                          )}
+                        </ItemTitle>
+                        <ItemDescription>
+                          {formatTokenMeta(token)}
+                        </ItemDescription>
+                      </ItemContent>
+
+                      <ItemActions className="basis-full sm:basis-auto">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => revokeClientToken(token.id)}
+                          disabled={isRevoking}
+                        >
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
+                          {isRevoking ? "Revoking..." : "Revoke"}
+                        </Button>
+                      </ItemActions>
+                    </Item>
+                  );
+                })
+              )}
+            </ItemGroup>
           </div>
-
-          <ItemGroup className="gap-0 divide-y border-y">
-            {clientTokens.length === 0 ? (
-              <Item className="rounded-none border-0 px-0 py-10" role="listitem">
-                <ItemContent>
-                  <ItemTitle>No client tokens</ItemTitle>
-                  <ItemDescription>
-                    Create a token when a trusted device is ready to connect.
-                  </ItemDescription>
-                </ItemContent>
-              </Item>
-            ) : (
-              clientTokens.map((token) => {
-                const isRevoking = pendingAction === `delete:${token.id}`;
-
-                return (
-                  <Item
-                    key={token.id}
-                    className="rounded-none border-0 px-0 py-4"
-                    role="listitem"
-                  >
-                    <ItemContent className="min-w-0">
-                      <ItemTitle className="max-w-full">
-                        <span className="truncate">{token.name}</span>
-                        {token.lastUsedAt ? (
-                          <Badge variant="outline">Active</Badge>
-                        ) : (
-                          <Badge variant="secondary">Unused</Badge>
-                        )}
-                      </ItemTitle>
-                      <ItemDescription>{formatTokenMeta(token)}</ItemDescription>
-                    </ItemContent>
-
-                    <ItemActions className="basis-full sm:basis-auto">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => revokeClientToken(token.id)}
-                        disabled={isRevoking}
-                      >
-                        <Trash2 className="h-4 w-4" aria-hidden="true" />
-                        {isRevoking ? "Revoking..." : "Revoke"}
-                      </Button>
-                    </ItemActions>
-                  </Item>
-                );
-              })
-            )}
-          </ItemGroup>
-        </div>
-      </FieldSet>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -33,7 +33,7 @@ export default async function DashboardSettingsPage() {
       title="Settings"
       user={user}
     >
-      <div className="py-6">
+      <div className="pt-6">
         <StatusMetrics
           metrics={[
             { label: "Client tokens", value: clientTokens.length },
@@ -49,7 +49,7 @@ export default async function DashboardSettingsPage() {
         />
       </div>
 
-      <div className="py-8">
+      <div className="pt-6">
         <ClientAccessSettings
           initialClientTokens={clientTokens}
           initialRemoteClientAccessEnabled={

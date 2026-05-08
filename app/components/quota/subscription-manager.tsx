@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { Plus, RefreshCw, Trash2 } from "lucide-react";
+import { Check, Plus, RefreshCw, Trash2 } from "lucide-react";
 import {
   ProviderDescriptor,
   QuotaResource,
@@ -12,12 +12,16 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
   Field,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
-  FieldLegend,
-  FieldSet,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,13 +36,6 @@ import {
   Progress,
   ProgressLabel,
 } from "@/components/ui/progress";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 type SubscriptionManagerProps = {
@@ -138,118 +135,186 @@ export function SubscriptionManager({
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6">
       {message ? (
         <Alert>
           <AlertDescription>{message}</AlertDescription>
         </Alert>
       ) : null}
 
-      <FieldSet className="border-t pt-6">
-        <FieldLegend>Server subscriptions</FieldLegend>
-        <FieldDescription>
-          {subscriptions.length} connected provider
-          {subscriptions.length === 1 ? "" : "s"} with server-side quota snapshots.
-        </FieldDescription>
-
-        <ItemGroup className="gap-0 divide-y border-y">
-          {subscriptions.length === 0 ? (
-            <Item className="rounded-none border-0 px-0 py-10" role="listitem">
-              <ItemContent>
-                <ItemTitle>No subscriptions connected</ItemTitle>
-                <ItemDescription>
-                  Add a provider below to start collecting quota snapshots for
-                  remote clients.
-                </ItemDescription>
-              </ItemContent>
-            </Item>
-          ) : (
-            subscriptions.map((subscription) => (
-              <SubscriptionItem
-                key={subscription.id}
-                pendingAction={pendingAction}
-                subscription={subscription}
-                onDelete={deleteSubscription}
-                onRefresh={refreshSubscription}
-              />
-            ))
-          )}
-        </ItemGroup>
-      </FieldSet>
-
-      <FieldSet className="border-t pt-6">
-        <FieldLegend>Connect provider</FieldLegend>
-        <FieldDescription>
-          Credentials stay encrypted on this server and are used only for quota
-          refreshes.
-        </FieldDescription>
-
-        <form onSubmit={createSubscription} className="border-y py-4">
-          <FieldGroup className="grid gap-4 md:grid-cols-2">
-            <Field>
-              <FieldLabel>Provider</FieldLabel>
-              <Select
-                value={selectedProviderId}
-                onValueChange={(value) => {
-                  setSelectedProviderId(value ?? "");
-                  setCredentialValues({});
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {providers.map((provider) => (
-                    <SelectItem key={provider.id} value={provider.id}>
-                      {provider.displayName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="subscription-title">Display name</FieldLabel>
-              <Input
-                id="subscription-title"
-                value={customTitle}
-                onChange={(event) => setCustomTitle(event.target.value)}
-                placeholder={selectedProvider?.displayName}
-              />
-            </Field>
-
-            {selectedProvider?.credentialFields.map((field) => (
-              <Field key={field.key}>
-                <FieldLabel htmlFor={`credential-${field.key}`}>
-                  {field.label}
-                </FieldLabel>
-                <Input
-                  id={`credential-${field.key}`}
-                  type={field.isSecret ? "password" : "text"}
-                  required={field.isRequired}
-                  value={credentialValues[field.key] ?? ""}
-                  onChange={(event) =>
-                    setCredentialValues((current) => ({
-                      ...current,
-                      [field.key]: event.target.value,
-                    }))
-                  }
+      <Card>
+        <CardHeader>
+          <CardTitle>Server subscriptions</CardTitle>
+          <CardDescription>
+            {subscriptions.length} connected provider
+            {subscriptions.length === 1 ? "" : "s"} with server-side quota
+            snapshots.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ItemGroup className="gap-0 divide-y rounded-lg border">
+            {subscriptions.length === 0 ? (
+              <Item className="rounded-none border-0 px-4 py-10" role="listitem">
+                <ItemContent>
+                  <ItemTitle>No subscriptions connected</ItemTitle>
+                  <ItemDescription>
+                    Add a provider below to start collecting quota snapshots for
+                    remote clients.
+                  </ItemDescription>
+                </ItemContent>
+              </Item>
+            ) : (
+              subscriptions.map((subscription) => (
+                <SubscriptionItem
+                  key={subscription.id}
+                  pendingAction={pendingAction}
+                  subscription={subscription}
+                  onDelete={deleteSubscription}
+                  onRefresh={refreshSubscription}
                 />
-              </Field>
-            ))}
+              ))
+            )}
+          </ItemGroup>
+        </CardContent>
+      </Card>
 
-            <div className="flex justify-end md:col-span-2">
-              <Button
-                type="submit"
-                disabled={!selectedProvider || pendingAction === "create"}
-              >
-                <Plus className="h-4 w-4" aria-hidden="true" />
-                {pendingAction === "create" ? "Connecting..." : "Connect provider"}
-              </Button>
+      <Card>
+        <CardHeader>
+          <CardTitle>Connect a provider</CardTitle>
+          <CardDescription>
+            Pick a provider, then enter the credentials needed to fetch quota
+            snapshots. Secrets stay encrypted on this server.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-3">
+            <div className="flex items-baseline justify-between">
+              <p className="text-sm font-medium text-foreground">
+                1. Choose provider
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {providers.length} available
+              </p>
             </div>
-          </FieldGroup>
-        </form>
-      </FieldSet>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {providers.map((provider) => {
+                const isSelected = provider.id === selectedProviderId;
+                const requiredCount = provider.credentialFields.filter(
+                  (field) => field.isRequired,
+                ).length;
+
+                return (
+                  <button
+                    key={provider.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedProviderId(provider.id);
+                      setCredentialValues({});
+                    }}
+                    aria-pressed={isSelected}
+                    className={cn(
+                      "group relative flex items-center gap-3 rounded-lg border bg-card p-3 text-left transition-all",
+                      "hover:border-foreground/30 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      isSelected
+                        ? "border-foreground ring-2 ring-foreground/10"
+                        : "border-border",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-sm font-semibold",
+                        isSelected
+                          ? "bg-foreground text-background"
+                          : "bg-muted text-foreground/70 group-hover:bg-muted/80",
+                      )}
+                      aria-hidden="true"
+                    >
+                      {providerInitials(provider.displayName)}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium text-foreground">
+                        {provider.displayName}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">
+                        {requiredCount === 0
+                          ? "No credentials required"
+                          : `${requiredCount} credential${requiredCount === 1 ? "" : "s"} required`}
+                      </span>
+                    </span>
+                    {isSelected ? (
+                      <Check
+                        className="h-4 w-4 shrink-0 text-foreground"
+                        aria-hidden="true"
+                      />
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {selectedProvider ? (
+            <form onSubmit={createSubscription} className="space-y-4">
+              <div className="flex items-baseline justify-between">
+                <p className="text-sm font-medium text-foreground">
+                  2. Configure {selectedProvider.displayName}
+                </p>
+              </div>
+              <FieldGroup className="grid gap-4 md:grid-cols-2">
+                <Field>
+                  <FieldLabel htmlFor="subscription-title">
+                    Display name
+                  </FieldLabel>
+                  <Input
+                    id="subscription-title"
+                    value={customTitle}
+                    onChange={(event) => setCustomTitle(event.target.value)}
+                    placeholder={selectedProvider.displayName}
+                  />
+                </Field>
+
+                {selectedProvider.credentialFields.map((field) => (
+                  <Field key={field.key}>
+                    <FieldLabel htmlFor={`credential-${field.key}`}>
+                      {field.label}
+                    </FieldLabel>
+                    <Input
+                      id={`credential-${field.key}`}
+                      type={field.isSecret ? "password" : "text"}
+                      required={field.isRequired}
+                      value={credentialValues[field.key] ?? ""}
+                      onChange={(event) =>
+                        setCredentialValues((current) => ({
+                          ...current,
+                          [field.key]: event.target.value,
+                        }))
+                      }
+                    />
+                  </Field>
+                ))}
+
+                <div className="flex justify-end md:col-span-2">
+                  <Button
+                    type="submit"
+                    disabled={pendingAction === "create"}
+                  >
+                    <Plus className="h-4 w-4" aria-hidden="true" />
+                    {pendingAction === "create"
+                      ? "Connecting..."
+                      : "Connect provider"}
+                  </Button>
+                </div>
+              </FieldGroup>
+            </form>
+          ) : (
+            <div className="rounded-lg border border-dashed bg-muted/30 px-4 py-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                Select a provider above to enter credentials.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -269,7 +334,7 @@ function SubscriptionItem({
 
   return (
     <Item
-      className="block rounded-none border-0 px-0 py-5"
+      className="block rounded-none border-0 px-4 py-5"
       role="listitem"
     >
       <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
@@ -327,7 +392,7 @@ function SubscriptionItem({
 function ResourceUsage({ resource }: { resource: QuotaResource }) {
   return (
     <Item
-      className="grid rounded-none border-0 px-0 py-4 lg:grid-cols-[minmax(180px,240px)_1fr] lg:items-start"
+      className="grid rounded-none border-0 px-0 py-3 lg:grid-cols-[minmax(180px,240px)_1fr] lg:items-start"
       role="listitem"
     >
       <ItemContent className="min-w-0">
@@ -450,4 +515,15 @@ function statusClassName(state: QuotaSubscription["syncState"]) {
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
+}
+
+function providerInitials(displayName: string) {
+  const words = displayName
+    .split(/[\s.\-_]+/)
+    .filter((word) => word.length > 0);
+
+  if (words.length === 0) return "?";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+
+  return (words[0][0] + words[1][0]).toUpperCase();
 }

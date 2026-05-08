@@ -33,7 +33,7 @@ export default async function DashboardPage() {
       title="Overview"
       user={user}
     >
-      <div className="py-6">
+      <div className="pt-6">
         <StatusMetrics
           metrics={[
             { label: "Providers", value: providerDescriptors.length },
@@ -43,7 +43,7 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="py-8">
+      <div className="pt-6">
         <SubscriptionManager
           initialProviders={providerDescriptors}
           initialSubscriptions={subscriptions}

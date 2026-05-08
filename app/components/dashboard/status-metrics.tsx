@@ -1,3 +1,5 @@
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
 type StatusMetric = {
   label: string;
   value: number | string;
@@ -9,20 +11,17 @@ type StatusMetricsProps = {
 
 export function StatusMetrics({ metrics }: StatusMetricsProps) {
   return (
-    <dl className="grid overflow-hidden rounded-lg border sm:grid-cols-3">
-      {metrics.map((metric, index) => (
-        <div
-          key={metric.label}
-          className={`px-4 py-4 ${
-            index > 0 ? "border-t sm:border-t-0 sm:border-l" : ""
-          }`}
-        >
-          <dt className="text-sm text-muted-foreground">{metric.label}</dt>
-          <dd className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
-            {metric.value}
-          </dd>
-        </div>
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {metrics.map((metric) => (
+        <Card key={metric.label} size="sm">
+          <CardHeader>
+            <CardDescription>{metric.label}</CardDescription>
+            <CardTitle className="font-heading text-2xl font-semibold tracking-tight">
+              {metric.value}
+            </CardTitle>
+          </CardHeader>
+        </Card>
       ))}
-    </dl>
+    </div>
   );
 }
