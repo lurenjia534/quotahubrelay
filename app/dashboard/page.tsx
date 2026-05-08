@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/app/components/dashboard/dashboard-shell";
+import { StatusMetrics } from "@/app/components/dashboard/status-metrics";
 import { SubscriptionManager } from "@/app/components/quota/subscription-manager";
 import { auth, isAuthorizedUser } from "@/app/lib/auth";
 import { providerDescriptors } from "@/app/lib/quota/providers";
@@ -21,6 +22,9 @@ export default async function DashboardPage() {
   }
 
   const subscriptions = await listSubscriptions(user.id);
+  const snapshotCount = subscriptions.filter(
+    (subscription) => subscription.snapshot,
+  ).length;
 
   return (
     <DashboardShell
@@ -29,12 +33,13 @@ export default async function DashboardPage() {
       title="Overview"
       user={user}
     >
-      <div className="grid gap-4 border-b border-zinc-200 py-6 dark:border-zinc-800 sm:grid-cols-3">
-        <StatusMetric label="Providers" value={providerDescriptors.length} />
-        <StatusMetric label="Subscriptions" value={subscriptions.length} />
-        <StatusMetric
-          label="Snapshots"
-          value={subscriptions.filter((subscription) => subscription.snapshot).length}
+      <div className="py-6">
+        <StatusMetrics
+          metrics={[
+            { label: "Providers", value: providerDescriptors.length },
+            { label: "Subscriptions", value: subscriptions.length },
+            { label: "Snapshots", value: snapshotCount },
+          ]}
         />
       </div>
 
@@ -45,16 +50,5 @@ export default async function DashboardPage() {
         />
       </div>
     </DashboardShell>
-  );
-}
-
-function StatusMetric({ label, value }: { label: string; value: number }) {
-  return (
-    <div>
-      <p className="text-sm text-zinc-500 dark:text-zinc-400">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-zinc-950 dark:text-zinc-50">
-        {value}
-      </p>
-    </div>
   );
 }

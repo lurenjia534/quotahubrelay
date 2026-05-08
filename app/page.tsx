@@ -4,6 +4,8 @@ import { auth, isAuthConfigured, isAuthorizedUser } from "@/app/lib/auth";
 import { SignInWithGithub } from "@/app/components/auth/sign-in-with-github";
 import { SignOutButton } from "@/app/components/auth/sign-out-button";
 import { UserSummary } from "@/app/components/auth/user-summary";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 
 type LoginPageProps = {
   searchParams?: Promise<{
@@ -34,13 +36,16 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   }
 
   return (
-    <div className="flex min-h-full flex-1 items-center justify-center bg-white dark:bg-black">
+    <div className="flex min-h-full flex-1 items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-sm px-4">
-        <div className="border-b border-zinc-200 pb-6 dark:border-zinc-800">
-          <h1 className="text-xl font-medium text-black dark:text-white">
+        <div className="pb-6">
+          <p className="text-sm font-medium text-muted-foreground">
+            QuotaHub Relay
+          </p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
             {user ? (isAuthorized ? "Signed in" : "Access denied") : "Sign in"}
           </h1>
-          <p className="mt-1 text-sm text-zinc-400 dark:text-zinc-500">
+          <p className="mt-2 text-sm text-muted-foreground">
             {user && isAuthorized
               ? "Your GitHub account is connected"
               : user
@@ -49,15 +54,19 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </p>
         </div>
 
-        <div className="border-t border-zinc-200 py-6 dark:border-zinc-800">
+        <Separator />
+
+        <div className="py-6">
           {!isConfigured || error || (user && !isAuthorized) ? (
-            <p className="mb-4 border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-950 dark:bg-red-950/30 dark:text-red-300">
-              {!isConfigured
-                ? errorMessages.auth_not_configured
-                : user && !isAuthorized
-                  ? errorMessages.access_denied
-                  : errorMessage}
-            </p>
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>
+                {!isConfigured
+                  ? errorMessages.auth_not_configured
+                  : user && !isAuthorized
+                    ? errorMessages.access_denied
+                    : errorMessage}
+              </AlertDescription>
+            </Alert>
           ) : null}
 
           {user ? (
@@ -74,7 +83,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           )}
         </div>
 
-        <p className="border-t border-zinc-200 pt-4 text-center text-xs text-zinc-400 dark:border-zinc-800 dark:text-zinc-600">
+        <Separator />
+
+        <p className="pt-4 text-center text-xs text-muted-foreground">
           &copy; {new Date().getFullYear()} QuotaHub Relay
         </p>
       </div>

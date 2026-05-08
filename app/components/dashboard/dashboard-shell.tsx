@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { SignOutButton } from "@/app/components/auth/sign-out-button";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 type DashboardShellProps = {
   activeItem: "overview" | "settings";
@@ -23,13 +25,13 @@ export function DashboardShell({
   const displayName = user.name || user.email || "User";
 
   return (
-    <div className="min-h-full flex-1 bg-white dark:bg-black">
-      <header className="border-b border-zinc-200 dark:border-zinc-800">
+    <div className="min-h-full flex-1 bg-background">
+      <header className="border-b">
         <div className="mx-auto flex min-h-16 w-full max-w-6xl flex-wrap items-center gap-x-8 gap-y-3 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-8">
             <Link
               href="/dashboard"
-              className="shrink-0 text-base font-semibold tracking-tight text-zinc-950 dark:text-zinc-50"
+              className="shrink-0 text-base font-semibold tracking-tight text-foreground"
             >
               QuotaHub Relay
             </Link>
@@ -51,7 +53,7 @@ export function DashboardShell({
           <div className="flex min-w-0 items-center gap-4">
             <div className="flex min-w-0 items-center gap-2">
               <UserAvatar image={user.image} name={displayName} />
-              <span className="max-w-32 truncate text-sm font-medium text-zinc-700 dark:text-zinc-300 sm:max-w-44">
+              <span className="max-w-32 truncate text-sm font-medium text-foreground sm:max-w-44">
                 {displayName}
               </span>
             </div>
@@ -63,14 +65,16 @@ export function DashboardShell({
       </header>
 
       <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="border-b border-zinc-200 pb-6 dark:border-zinc-800">
-          <h1 className="text-2xl font-semibold text-black dark:text-white">
+        <div className="pb-6">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             {title}
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
             {description}
           </p>
         </div>
+
+        <Separator />
 
         {children}
       </main>
@@ -91,13 +95,13 @@ function UserAvatar({
       <img
         src={image}
         alt=""
-        className="h-8 w-8 shrink-0 rounded-full bg-zinc-100 object-cover dark:bg-zinc-900"
+        className="h-8 w-8 shrink-0 rounded-full bg-muted object-cover"
       />
     );
   }
 
   return (
-    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-medium text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
+    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
       {name.slice(0, 1).toUpperCase()}
     </div>
   );
@@ -116,11 +120,10 @@ function NavItem({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={
-        active
-          ? "text-sm font-medium text-zinc-950 dark:text-zinc-50"
-          : "text-sm font-medium text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
-      }
+      className={cn(
+        "text-sm font-medium transition-colors hover:text-foreground",
+        active ? "text-foreground" : "text-muted-foreground",
+      )}
     >
       {label}
     </Link>

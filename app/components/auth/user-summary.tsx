@@ -9,17 +9,17 @@ export function UserSummary({ email, image, name }: UserSummaryProps) {
     <div className="flex items-center gap-3">
       {image ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={image} alt="" className="h-10 w-10 rounded-full" />
+        <img src={image} alt="" className="h-10 w-10 rounded-full object-cover" />
       ) : (
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 text-sm font-medium text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground">
           {name.slice(0, 1).toUpperCase()}
         </div>
       )}
       <div className="min-w-0">
-        <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+        <p className="truncate text-sm font-medium text-foreground">
           {name}
         </p>
-        <p className="truncate text-xs text-zinc-500">{email}</p>
+        <p className="truncate text-xs text-muted-foreground">{email}</p>
       </div>
     </div>
   );

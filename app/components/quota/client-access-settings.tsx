@@ -1,6 +1,12 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
 import { useState } from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { RelayClientToken } from "@/app/lib/quota/types";
 
 type ClientAccessSettingsProps = {
@@ -86,62 +92,44 @@ export function ClientAccessSettings({
 
   return (
     <div className="space-y-8">
-      <section className="border-t border-zinc-200 pt-6 dark:border-zinc-800">
+      <section className="border-t pt-6">
         <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-start">
           <div className="max-w-2xl">
-            <h2 className="text-base font-medium text-zinc-950 dark:text-zinc-50">
+            <h2 className="text-base font-medium text-foreground">
               Server coordination
             </h2>
-            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="mt-1 text-sm text-muted-foreground">
               Gate remote client access before this server accepts Bearer-token
               relay requests.
             </p>
           </div>
 
-          <button
-            type="button"
-            role="switch"
-            aria-checked={remoteClientAccessEnabled}
-            disabled={pendingAction === "settings"}
-            onClick={() =>
-              updateRemoteClientAccess(!remoteClientAccessEnabled)
-            }
-            className="inline-flex items-center gap-3 justify-self-start text-left disabled:cursor-not-allowed disabled:opacity-60 lg:justify-self-end"
-          >
-            <span
-              className={`flex h-6 w-11 shrink-0 items-center border transition ${
-                remoteClientAccessEnabled
-                  ? "border-zinc-950 bg-zinc-950 dark:border-zinc-50 dark:bg-zinc-50"
-                  : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-black"
-              }`}
-            >
-              <span
-                className={`block h-4 w-4 bg-zinc-300 transition dark:bg-zinc-600 ${
-                  remoteClientAccessEnabled
-                    ? "translate-x-5 bg-white dark:bg-zinc-950"
-                    : "translate-x-1"
-                }`}
-              />
-            </span>
-            <span>
-              <span className="block text-sm font-medium text-zinc-950 dark:text-zinc-50">
+          <div className="flex items-start gap-3 justify-self-start lg:justify-self-end">
+            <Switch
+              checked={remoteClientAccessEnabled}
+              disabled={pendingAction === "settings"}
+              onCheckedChange={updateRemoteClientAccess}
+              className="mt-0.5"
+            />
+            <div>
+              <p className="text-sm font-medium text-foreground">
                 Remote client mode
-              </span>
-              <span className="block max-w-sm text-sm text-zinc-500 dark:text-zinc-400">
+              </p>
+              <p className="mt-1 max-w-sm text-sm text-muted-foreground">
                 Allow trusted QuotaHub Android clients to link to this web server
                 after strict authentication.
-              </span>
-            </span>
-          </button>
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="mt-5 border-y border-zinc-200 py-4 dark:border-zinc-800">
-          <p className="text-sm font-medium text-zinc-950 dark:text-zinc-50">
+        <div className="mt-5 border-y py-4">
+          <p className="text-sm font-medium text-foreground">
             {remoteClientAccessEnabled
               ? "Client endpoints armed"
               : "Web dashboard only"}
           </p>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             {remoteClientAccessEnabled
               ? "Bearer-token relay endpoints are available to generated client tokens."
               : "Bearer-token relay endpoints are closed. QuotaHub Relay still works as a web dashboard."}
@@ -149,68 +137,65 @@ export function ClientAccessSettings({
         </div>
       </section>
 
-      <section className="border-t border-zinc-200 pt-6 dark:border-zinc-800">
-        <h2 className="text-base font-medium text-zinc-950 dark:text-zinc-50">
+      <section className="border-t pt-6">
+        <h2 className="text-base font-medium text-foreground">
           Android client access
         </h2>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-muted-foreground">
           Generate a Bearer token for QuotaHub Android remote client mode.
           Tokens can read relay endpoints only when remote client mode is on.
         </p>
 
         <div className="mt-5 space-y-4">
-          <label className="block">
-            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Token name
-            </span>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="client-token-name">Token name</Label>
+            <Input
+              id="client-token-name"
               value={clientTokenName}
               onChange={(event) => setClientTokenName(event.target.value)}
-              className="mt-2 w-full border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 dark:border-zinc-700 dark:bg-black dark:text-zinc-50 dark:focus:border-zinc-100"
             />
-          </label>
+          </div>
 
-          <button
-            type="button"
+          <Button
             disabled={pendingAction === "create"}
             onClick={createClientToken}
-            className="w-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+            className="w-full"
           >
             {pendingAction === "create" ? "Creating..." : "Create client token"}
-          </button>
+          </Button>
         </div>
 
         {newClientToken ? (
-          <div className="mt-5 border border-amber-200 bg-amber-50 px-3 py-3 dark:border-amber-950 dark:bg-amber-950/30">
-            <p className="text-sm font-medium text-amber-950 dark:text-amber-100">
+          <Alert className="mt-5 border-amber-500/30 bg-amber-500/10">
+            <AlertTitle className="text-amber-900">
               Copy this token now. It will not be shown again.
-            </p>
+            </AlertTitle>
             <code className="mt-2 block break-all text-xs text-amber-900 dark:text-amber-200">
               {newClientToken}
             </code>
-          </div>
+          </Alert>
         ) : null}
 
         {message ? (
-          <p className="mt-4 border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300">
-            {message}
-          </p>
+          <Alert className="mt-4">
+            <AlertDescription>{message}</AlertDescription>
+          </Alert>
         ) : null}
       </section>
 
-      <section className="border-t border-zinc-200 pt-6 dark:border-zinc-800">
+      <section className="border-t pt-6">
         <div>
-          <h2 className="text-base font-medium text-zinc-950 dark:text-zinc-50">
+          <h2 className="text-base font-medium text-foreground">
             Active client tokens
           </h2>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             Revoke a token when a device is lost or no longer trusted.
           </p>
         </div>
 
-        <div className="mt-5 divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+        <div className="mt-5 divide-y border-y">
           {clientTokens.length === 0 ? (
-            <p className="py-10 text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="py-10 text-sm text-muted-foreground">
               No Android client tokens yet.
             </p>
           ) : (
@@ -220,10 +205,10 @@ export function ClientAccessSettings({
                 className="grid gap-3 py-5 sm:grid-cols-[1fr_auto] sm:items-start"
               >
                 <div>
-                  <p className="text-sm font-medium text-zinc-950 dark:text-zinc-50">
+                  <p className="text-sm font-medium text-foreground">
                     {token.name}
                   </p>
-                  <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {token.tokenPrefix}... · created{" "}
                     {new Date(token.createdAt).toLocaleString()}
                     {token.lastUsedAt
@@ -231,14 +216,15 @@ export function ClientAccessSettings({
                       : ""}
                   </p>
                 </div>
-                <button
-                  type="button"
+                <Button
+                  variant="destructive"
+                  size="sm"
                   onClick={() => revokeClientToken(token.id)}
                   disabled={pendingAction === `delete:${token.id}`}
-                  className="border border-red-200 px-3 py-1.5 text-sm text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-950 dark:text-red-300 dark:hover:bg-red-950/30"
                 >
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
                   {pendingAction === `delete:${token.id}` ? "Revoking..." : "Revoke"}
-                </button>
+                </Button>
               </div>
             ))
           )}

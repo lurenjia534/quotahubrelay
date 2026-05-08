@@ -2,13 +2,19 @@
 
 import { useTransition } from "react";
 import { signOut } from "@/app/actions/auth";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-export function SignOutButton() {
+type SignOutButtonProps = {
+  className?: string;
+};
+
+export function SignOutButton({ className }: SignOutButtonProps) {
   const [isPending, startTransition] = useTransition();
 
   return (
-    <button
-      type="button"
+    <Button
+      variant="outline"
       disabled={isPending}
       onClick={() => {
         startTransition(async () => {
@@ -16,9 +22,9 @@ export function SignOutButton() {
           window.location.href = "/";
         });
       }}
-      className="flex w-full items-center justify-center border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+      className={cn("w-full", className)}
     >
       {isPending ? "Signing out..." : "Sign out"}
-    </button>
+    </Button>
   );
 }
