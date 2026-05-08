@@ -1,11 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth, isAuthConfigured, isAuthorizedUser } from "@/app/lib/auth";
-import { SignInWithGithub } from "@/app/components/auth/sign-in-with-github";
-import { SignOutButton } from "@/app/components/auth/sign-out-button";
-import { UserSummary } from "@/app/components/auth/user-summary";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
+import { AuthPanel } from "@/app/components/auth/auth-panel";
 
 type LoginPageProps = {
   searchParams?: Promise<{
@@ -25,70 +21,38 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   });
   const user = session?.user;
   const error = (await searchParams)?.error;
-  const errorMessage = error
-    ? (errorMessages[error] ?? "Unable to sign in. Please try again.")
-    : null;
   const isConfigured = isAuthConfigured();
   const isAuthorized = isAuthorizedUser(user);
+  const errorMessage = !isConfigured
+    ? errorMessages.auth_not_configured
+    : user && !isAuthorized
+      ? errorMessages.access_denied
+      : error
+    ? (errorMessages[error] ?? "Unable to sign in. Please try again.")
+    : null;
 
   if (user && isAuthorized) {
     redirect("/dashboard");
   }
 
   return (
-    <div className="flex min-h-full flex-1 items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-sm px-4">
-        <div className="pb-6">
-          <p className="text-sm font-medium text-muted-foreground">
+    <main className="flex min-h-svh flex-1 items-center justify-center bg-background p-6 md:p-10">
+      <div className="flex w-full max-w-sm flex-col gap-6">
+        <div className="flex items-center justify-center gap-2">
+          <div className="flex size-6 items-center justify-center rounded-md bg-primary text-xs font-semibold text-primary-foreground">
+            Q
+          </div>
+          <span className="text-sm font-medium text-foreground">
             QuotaHub Relay
-          </p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-            {user ? (isAuthorized ? "Signed in" : "Access denied") : "Sign in"}
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {user && isAuthorized
-              ? "Your GitHub account is connected"
-              : user
-                ? "This GitHub account is not allowed"
-              : "Sign in with your GitHub account"}
-          </p>
+          </span>
         </div>
 
-        <Separator />
-
-        <div className="py-6">
-          {!isConfigured || error || (user && !isAuthorized) ? (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>
-                {!isConfigured
-                  ? errorMessages.auth_not_configured
-                  : user && !isAuthorized
-                    ? errorMessages.access_denied
-                    : errorMessage}
-              </AlertDescription>
-            </Alert>
-          ) : null}
-
-          {user ? (
-            <div className="space-y-4">
-              <UserSummary
-                email={user.email}
-                image={user.image}
-                name={user.name}
-              />
-              <SignOutButton />
-            </div>
-          ) : (
-            <SignInWithGithub disabled={!isConfigured} />
-          )}
-        </div>
-
-        <Separator />
-
-        <p className="pt-4 text-center text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} QuotaHub Relay
-        </p>
+        <AuthPanel
+          errorMessage={errorMessage}
+          isConfigured={isConfigured}
+          user={user}
+        />
       </div>
-    </div>
+    </main>
   );
 }

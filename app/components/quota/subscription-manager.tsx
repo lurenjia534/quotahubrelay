@@ -1,13 +1,37 @@
 "use client";
 
-import { Plus, RefreshCw, Trash2 } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
+import { Plus, RefreshCw, Trash2 } from "lucide-react";
+import {
+  ProviderDescriptor,
+  QuotaResource,
+  QuotaSubscription,
+  QuotaWindow,
+} from "@/app/lib/quota/types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemTitle,
+} from "@/components/ui/item";
+import {
+  Progress,
+  ProgressLabel,
+} from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -16,12 +40,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import {
-  ProviderDescriptor,
-  QuotaResource,
-  QuotaSubscription,
-  QuotaWindow,
-} from "@/app/lib/quota/types";
 
 type SubscriptionManagerProps = {
   initialProviders: ProviderDescriptor[];
@@ -127,34 +145,27 @@ export function SubscriptionManager({
         </Alert>
       ) : null}
 
-      <section className="border-t pt-6">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 className="text-base font-medium text-foreground">
-              Server subscriptions
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {subscriptions.length} connected provider
-              {subscriptions.length === 1 ? "" : "s"} with server-side quota
-              snapshots.
-            </p>
-          </div>
-        </div>
+      <FieldSet className="border-t pt-6">
+        <FieldLegend>Server subscriptions</FieldLegend>
+        <FieldDescription>
+          {subscriptions.length} connected provider
+          {subscriptions.length === 1 ? "" : "s"} with server-side quota snapshots.
+        </FieldDescription>
 
-        <div className="mt-5 divide-y border-y">
+        <ItemGroup className="gap-0 divide-y border-y">
           {subscriptions.length === 0 ? (
-            <div className="py-12">
-              <p className="text-sm font-medium text-foreground">
-                No subscriptions connected
-              </p>
-              <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-                Add a provider below to start collecting quota snapshots for remote
-                clients.
-              </p>
-            </div>
+            <Item className="rounded-none border-0 px-0 py-10" role="listitem">
+              <ItemContent>
+                <ItemTitle>No subscriptions connected</ItemTitle>
+                <ItemDescription>
+                  Add a provider below to start collecting quota snapshots for
+                  remote clients.
+                </ItemDescription>
+              </ItemContent>
+            </Item>
           ) : (
             subscriptions.map((subscription) => (
-              <SubscriptionRow
+              <SubscriptionItem
                 key={subscription.id}
                 pendingAction={pendingAction}
                 subscription={subscription}
@@ -163,90 +174,87 @@ export function SubscriptionManager({
               />
             ))
           )}
-        </div>
-      </section>
+        </ItemGroup>
+      </FieldSet>
 
-      <form
-        onSubmit={createSubscription}
-        className="border-t pt-6"
-      >
-        <div className="max-w-2xl">
-          <h2 className="text-base font-medium text-foreground">
-            Connect provider
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Credentials stay encrypted on this server and are used only for quota
-            refreshes.
-          </p>
-        </div>
+      <FieldSet className="border-t pt-6">
+        <FieldLegend>Connect provider</FieldLegend>
+        <FieldDescription>
+          Credentials stay encrypted on this server and are used only for quota
+          refreshes.
+        </FieldDescription>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label>Provider</Label>
-            <Select
-              value={selectedProviderId}
-              onValueChange={(value) => {
-                setSelectedProviderId(value ?? "");
-                setCredentialValues({});
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {providers.map((provider) => (
-                  <SelectItem key={provider.id} value={provider.id}>
-                    {provider.displayName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <form onSubmit={createSubscription} className="border-y py-4">
+          <FieldGroup className="grid gap-4 md:grid-cols-2">
+            <Field>
+              <FieldLabel>Provider</FieldLabel>
+              <Select
+                value={selectedProviderId}
+                onValueChange={(value) => {
+                  setSelectedProviderId(value ?? "");
+                  setCredentialValues({});
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {providers.map((provider) => (
+                    <SelectItem key={provider.id} value={provider.id}>
+                      {provider.displayName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
 
-          <div className="space-y-2">
-            <Label htmlFor="subscription-title">Display name</Label>
-            <Input
-              id="subscription-title"
-              value={customTitle}
-              onChange={(event) => setCustomTitle(event.target.value)}
-              placeholder={selectedProvider?.displayName}
-            />
-          </div>
-
-          {selectedProvider?.credentialFields.map((field) => (
-            <div key={field.key} className="space-y-2">
-              <Label htmlFor={`credential-${field.key}`}>{field.label}</Label>
+            <Field>
+              <FieldLabel htmlFor="subscription-title">Display name</FieldLabel>
               <Input
-                id={`credential-${field.key}`}
-                type={field.isSecret ? "password" : "text"}
-                required={field.isRequired}
-                value={credentialValues[field.key] ?? ""}
-                onChange={(event) =>
-                  setCredentialValues((current) => ({
-                    ...current,
-                    [field.key]: event.target.value,
-                  }))
-                }
+                id="subscription-title"
+                value={customTitle}
+                onChange={(event) => setCustomTitle(event.target.value)}
+                placeholder={selectedProvider?.displayName}
               />
-            </div>
-          ))}
-        </div>
+            </Field>
 
-        <div className="mt-5 flex justify-end">
-          <Button
-            type="submit"
-            disabled={!selectedProvider || pendingAction === "create"}
-          >
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            {pendingAction === "create" ? "Connecting..." : "Connect provider"}
-          </Button>
-        </div>
-      </form>
+            {selectedProvider?.credentialFields.map((field) => (
+              <Field key={field.key}>
+                <FieldLabel htmlFor={`credential-${field.key}`}>
+                  {field.label}
+                </FieldLabel>
+                <Input
+                  id={`credential-${field.key}`}
+                  type={field.isSecret ? "password" : "text"}
+                  required={field.isRequired}
+                  value={credentialValues[field.key] ?? ""}
+                  onChange={(event) =>
+                    setCredentialValues((current) => ({
+                      ...current,
+                      [field.key]: event.target.value,
+                    }))
+                  }
+                />
+              </Field>
+            ))}
+
+            <div className="flex justify-end md:col-span-2">
+              <Button
+                type="submit"
+                disabled={!selectedProvider || pendingAction === "create"}
+              >
+                <Plus className="h-4 w-4" aria-hidden="true" />
+                {pendingAction === "create" ? "Connecting..." : "Connect provider"}
+              </Button>
+            </div>
+          </FieldGroup>
+        </form>
+      </FieldSet>
     </div>
   );
 }
 
-function SubscriptionRow({
+function SubscriptionItem({
   pendingAction,
   subscription,
   onDelete,
@@ -260,24 +268,25 @@ function SubscriptionRow({
   const resources = subscription.snapshot?.resources ?? [];
 
   return (
-    <article className="py-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate text-base font-medium text-foreground">
-              {subscription.displayTitle}
-            </h3>
+    <Item
+      className="block rounded-none border-0 px-0 py-5"
+      role="listitem"
+    >
+      <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+        <ItemContent className="min-w-0">
+          <ItemTitle className="max-w-full">
+            <span className="truncate">{subscription.displayTitle}</span>
             <StatusBadge state={subscription.syncState} />
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">
+          </ItemTitle>
+          <ItemDescription>
             {subscription.providerDisplayName}
             {subscription.lastSyncedAt
               ? ` · synced ${formatDateTime(subscription.lastSyncedAt)}`
               : ""}
-          </p>
-        </div>
+          </ItemDescription>
+        </ItemContent>
 
-        <div className="flex items-center gap-2">
+        <ItemActions className="justify-start sm:justify-end">
           <Button
             variant="outline"
             size="sm"
@@ -296,39 +305,40 @@ function SubscriptionRow({
             <Trash2 className="h-4 w-4" aria-hidden="true" />
             {pendingAction === `delete:${subscription.id}` ? "Deleting" : "Delete"}
           </Button>
-        </div>
+        </ItemActions>
       </div>
 
       {resources.length > 0 ? (
-        <div className="mt-5 divide-y border-t">
+        <ItemGroup className="mt-5 gap-0 divide-y border-t">
           {resources.map((resource) => (
             <ResourceUsage key={resource.key} resource={resource} />
           ))}
-        </div>
+        </ItemGroup>
       ) : (
         <p className="mt-5 border-t pt-5 text-sm text-muted-foreground">
-          No quota snapshot is available yet. Refresh this subscription to fetch the
-          latest provider state.
+          No quota snapshot is available yet. Refresh this subscription to fetch
+          the latest provider state.
         </p>
       )}
-    </article>
+    </Item>
   );
 }
 
 function ResourceUsage({ resource }: { resource: QuotaResource }) {
   return (
-    <div className="grid gap-3 py-4 lg:grid-cols-[minmax(180px,240px)_1fr]">
-      <div className="min-w-0">
-        <p className="truncate text-sm font-medium text-foreground">
-          {resource.title}
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground">
+    <Item
+      className="grid rounded-none border-0 px-0 py-4 lg:grid-cols-[minmax(180px,240px)_1fr] lg:items-start"
+      role="listitem"
+    >
+      <ItemContent className="min-w-0">
+        <ItemTitle>{resource.title}</ItemTitle>
+        <ItemDescription>
           {resource.type}
           {resource.role ? ` · ${resource.role.toLowerCase()}` : ""}
-        </p>
-      </div>
+        </ItemDescription>
+      </ItemContent>
 
-      <div className="space-y-3">
+      <div className="w-full space-y-3">
         {resource.windows.map((window) => (
           <QuotaWindowUsage
             key={`${resource.key}:${window.windowKey}`}
@@ -336,7 +346,7 @@ function ResourceUsage({ resource }: { resource: QuotaResource }) {
           />
         ))}
       </div>
-    </div>
+    </Item>
   );
 }
 
@@ -344,37 +354,31 @@ function QuotaWindowUsage({ window }: { window: QuotaWindow }) {
   const usage = quotaUsage(window);
 
   return (
-    <div>
-      <div className="grid gap-1 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-baseline">
-        <div className="min-w-0">
-          <p className="truncate text-sm text-foreground">
-            {window.label ?? window.scope}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {window.resetAtEpochMillis
-              ? `Resets ${formatDateTime(window.resetAtEpochMillis)}`
-              : "No reset window reported"}
-          </p>
-        </div>
-        <p className="text-sm font-medium text-foreground">
-          {usage
-            ? `${formatQuantity(usage.used, window.unit)} / ${formatQuantity(
-                usage.total,
-                window.unit,
-              )}`
-            : formatOpenUsage(window)}
-        </p>
-      </div>
-
+    <Progress value={usage?.percent ?? 0}>
+      <ProgressLabel>
+        <span className="block truncate text-sm font-normal text-foreground">
+          {window.label ?? window.scope}
+        </span>
+        <span className="block text-xs font-normal text-muted-foreground">
+          {window.resetAtEpochMillis
+            ? `Resets ${formatDateTime(window.resetAtEpochMillis)}`
+            : "No reset window reported"}
+        </span>
+      </ProgressLabel>
+      <p className="ml-auto text-sm font-medium text-foreground">
+        {usage
+          ? `${formatQuantity(usage.used, window.unit)} / ${formatQuantity(
+              usage.total,
+              window.unit,
+            )}`
+          : formatOpenUsage(window)}
+      </p>
       {usage ? (
-        <>
-          <Progress value={usage.percent} className="mt-2" />
-          <p className="mt-1 text-xs text-muted-foreground">
-            {formatQuantity(usage.remaining, window.unit)} remaining
-          </p>
-        </>
+        <p className="basis-full text-xs text-muted-foreground">
+          {formatQuantity(usage.remaining, window.unit)} remaining
+        </p>
       ) : null}
-    </div>
+    </Progress>
   );
 }
 
