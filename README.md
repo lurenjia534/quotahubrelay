@@ -138,7 +138,7 @@ Client token management requires the GitHub dashboard session. Subscription and 
 | Method | Path | Auth | Description |
 | --- | --- | --- | --- |
 | `GET` | `/api/relay/providers` | Session or Bearer | List provider descriptors and credential fields. |
-| `GET` | `/api/relay/subscriptions` | Session or Bearer | List server-managed subscriptions and latest snapshots. |
+| `GET` | `/api/relay/subscriptions` | Session or Bearer | List server-managed subscriptions, latest snapshots, and deleted subscription tombstones. Optional query: `deletedSince=<epochMillis>`. |
 | `POST` | `/api/relay/subscriptions` | Session or Bearer | Validate credentials, create a subscription, and cache the first snapshot. |
 | `GET` | `/api/relay/subscriptions/:id` | Session or Bearer | Read one subscription and latest snapshot. |
 | `DELETE` | `/api/relay/subscriptions/:id` | Session or Bearer | Delete a subscription and cached snapshot. |
@@ -164,6 +164,24 @@ Create subscription example:
 ```
 
 ## Quota Snapshot Model
+
+`GET /api/relay/subscriptions` returns current subscriptions plus tombstones for
+subscriptions deleted from Relay, so linked clients can prune cached cloud
+projections:
+
+```json
+{
+  "subscriptions": [],
+  "deletedSubscriptions": [
+    {
+      "id": "relay-subscription-id",
+      "deletedAt": 1760000000000
+    }
+  ]
+}
+```
+
+When `deletedSince` is omitted, all retained tombstones are returned.
 
 Relay normalizes upstream provider responses into the Android app's quota model:
 

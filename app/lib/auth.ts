@@ -2,8 +2,7 @@ import "server-only";
 
 import { APIError, betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
-import Database from "better-sqlite3";
-import { Pool } from "pg";
+import { createAuthDatabase } from "@/app/lib/db/client";
 
 const authSecret = process.env.BETTER_AUTH_SECRET;
 const githubClientId = process.env.GITHUB_CLIENT_ID;
@@ -77,14 +76,4 @@ function assertAllowedEmail(email?: string | null) {
   if (!isAllowedEmail(email)) {
     throw new APIError("FORBIDDEN", { message: "access denied" });
   }
-}
-
-function createAuthDatabase() {
-  if (process.env.DATABASE_URL) {
-    return new Pool({
-      connectionString: process.env.DATABASE_URL,
-    });
-  }
-
-  return new Database(process.env.SQLITE_DATABASE_PATH || "auth.sqlite");
 }

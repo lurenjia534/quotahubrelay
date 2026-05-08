@@ -92,6 +92,11 @@ export type QuotaSubscription = {
   snapshot: QuotaSnapshot | null;
 };
 
+export type DeletedQuotaSubscription = {
+  id: string;
+  deletedAt: number;
+};
+
 export type RelayClientToken = {
   id: string;
   name: string;

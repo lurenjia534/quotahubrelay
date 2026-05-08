@@ -10,6 +10,7 @@ import {
 } from "@/app/lib/quota/providers";
 import {
   createSubscription,
+  listDeletedSubscriptions,
   listSubscriptions,
 } from "@/app/lib/quota/store";
 
@@ -19,8 +20,12 @@ export async function GET(request: Request) {
   const user = await requireApiUser(request);
   if (user instanceof Response) return user;
 
+  const deletedSince = parseDeletedSince(request);
+  if (deletedSince instanceof Response) return deletedSince;
+
   const subscriptions = await listSubscriptions(user.id);
-  return Response.json({ subscriptions });
+  const deletedSubscriptions = await listDeletedSubscriptions(user.id, deletedSince);
+  return Response.json({ subscriptions, deletedSubscriptions });
 }
 
 export async function POST(request: Request) {
@@ -58,6 +63,24 @@ export async function POST(request: Request) {
   } catch (error) {
     return providerErrorResponse(error);
   }
+}
+
+function parseDeletedSince(request: Request) {
+  const rawValue = new URL(request.url).searchParams.get("deletedSince");
+  if (rawValue == null || rawValue.trim() === "") {
+    return undefined;
+  }
+
+  const parsedValue = Number(rawValue);
+  if (!Number.isSafeInteger(parsedValue) || parsedValue < 0) {
+    return jsonError(
+      "invalid_deleted_since",
+      "`deletedSince` must be a non-negative millisecond timestamp.",
+      400,
+    );
+  }
+
+  return parsedValue;
 }
 
 function parseCreateSubscriptionBody(value: unknown) {
