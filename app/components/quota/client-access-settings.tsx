@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { KeyRound, ShieldCheck, Trash2, Wifi } from "lucide-react";
 import { RelayClientToken } from "@/app/lib/quota/types";
 import {
@@ -10,6 +11,12 @@ import {
   MaterialSwitch,
   MaterialTextField,
 } from "@/app/components/material/primitives";
+import {
+  expressiveContainer,
+  expressiveItem,
+  expressiveListItem,
+  materialHover,
+} from "@/app/components/material/motion";
 import { ThemeColorSettings } from "@/app/components/quota/theme-color-settings";
 
 type ClientAccessSettingsProps = {
@@ -102,11 +109,19 @@ export function ClientAccessSettings({
   }
 
   return (
-    <div className="space-y-10">
+    <motion.div
+      animate="show"
+      className="space-y-10"
+      initial="hidden"
+      variants={expressiveContainer}
+    >
       <ThemeColorSettings />
 
-      <div className="grid gap-8 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-      <section>
+      <motion.div
+        className="grid gap-8 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]"
+        variants={expressiveItem}
+      >
+      <motion.section layout>
         <div className="mb-5 flex items-start justify-between gap-4">
           <div className="flex min-w-0 gap-4">
             <div className="grid size-12 shrink-0 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-primary-container text-on-primary-container">
@@ -152,9 +167,9 @@ export function ClientAccessSettings({
             />
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="xl:border-l xl:border-outline-variant xl:pl-8">
+      <motion.section className="xl:border-l xl:border-outline-variant xl:pl-8" layout>
         <div className="mb-5 flex items-start gap-4">
           <div className="grid size-12 shrink-0 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-tertiary-container text-on-tertiary-container">
             <KeyRound className="size-6" aria-hidden="true" />
@@ -192,23 +207,43 @@ export function ClientAccessSettings({
         </form>
 
         <div className="mt-5 space-y-4">
-          {newClientToken ? (
-            <MaterialAlert title="Copy this token now" variant="warning">
-              <p>It will not be shown again.</p>
-              <code className="mt-3 block break-all rounded-[var(--md-sys-shape-corner-medium)] bg-surface px-3 py-2 font-mono text-xs text-on-surface ring-1 ring-outline-variant">
-                {newClientToken}
-              </code>
-            </MaterialAlert>
-          ) : null}
+          <AnimatePresence mode="popLayout">
+            {newClientToken ? (
+              <motion.div
+                key="new-client-token"
+                layout
+                variants={expressiveListItem}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+              >
+                <MaterialAlert title="Copy this token now" variant="warning">
+                  <p>It will not be shown again.</p>
+                  <code className="mt-3 block break-all rounded-[var(--md-sys-shape-corner-medium)] bg-surface px-3 py-2 font-mono text-xs text-on-surface ring-1 ring-outline-variant">
+                    {newClientToken}
+                  </code>
+                </MaterialAlert>
+              </motion.div>
+            ) : null}
 
-          {message ? (
-            <MaterialAlert variant={isErrorMessage(message) ? "error" : "info"}>
-              {message}
-            </MaterialAlert>
-          ) : null}
+            {message ? (
+              <motion.div
+                key={message}
+                layout
+                variants={expressiveListItem}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+              >
+                <MaterialAlert variant={isErrorMessage(message) ? "error" : "info"}>
+                  {message}
+                </MaterialAlert>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
         </div>
 
-        <div className="mt-6">
+        <motion.div className="mt-6" layout>
           <div className="grid gap-1 border-b border-outline-variant pb-4 sm:grid-cols-[1fr_auto] sm:items-end">
             <div>
               <h3 className="md-title-large md-emphasized text-on-surface">
@@ -223,8 +258,17 @@ export function ClientAccessSettings({
             </p>
           </div>
 
-          {clientTokens.length === 0 ? (
-            <div className="py-12 text-center">
+          <AnimatePresence initial={false} mode="popLayout">
+            {clientTokens.length === 0 ? (
+            <motion.div
+              key="empty-client-tokens"
+              layout
+              className="py-12 text-center"
+              variants={expressiveListItem}
+              initial="hidden"
+              animate="show"
+              exit="exit"
+            >
               <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container">
                 <ShieldCheck className="size-6" aria-hidden="true" />
               </div>
@@ -234,16 +278,22 @@ export function ClientAccessSettings({
               <p className="mx-auto mt-2 max-w-md md-body-medium text-on-surface-variant">
                 Create a token when a trusted device is ready to connect.
               </p>
-            </div>
-          ) : (
-            <div className="divide-y divide-outline-variant">
+            </motion.div>
+            ) : (
+            <motion.div className="divide-y divide-outline-variant" layout>
               {clientTokens.map((token) => {
                 const isRevoking = pendingAction === `delete:${token.id}`;
 
                 return (
-                  <div
+                  <motion.div
                     key={token.id}
+                    layout
                     className="grid gap-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                    variants={expressiveListItem}
+                    initial="hidden"
+                    animate="show"
+                    exit="exit"
+                    whileHover={materialHover}
                   >
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
@@ -270,15 +320,16 @@ export function ClientAccessSettings({
                       <Trash2 className="size-4" aria-hidden="true" />
                       {isRevoking ? "Revoking..." : "Revoke"}
                     </MaterialButton>
-                  </div>
+                  </motion.div>
                 );
               })}
-            </div>
-          )}
-        </div>
-      </section>
-      </div>
-    </div>
+            </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </motion.section>
+      </motion.div>
+    </motion.div>
   );
 }
 

@@ -1,9 +1,18 @@
 import type { ReactNode } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import * as motion from "motion/react-client";
 import { Activity, KeyRound, RadioTower, Route } from "lucide-react";
 import { auth, isAuthConfigured, isAuthorizedUser } from "@/app/lib/auth";
 import { AuthPanel } from "@/app/components/auth/auth-panel";
+import {
+  expressiveContainer,
+  expressiveItem,
+  materialEmphasized,
+  materialHover,
+  materialSpring,
+  materialTap,
+} from "@/app/components/material/motion";
 
 type LoginPageProps = {
   searchParams?: Promise<{
@@ -39,11 +48,24 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <main className="min-h-svh flex-1 bg-surface text-on-surface">
-      <div className="grid min-h-svh lg:grid-cols-[minmax(0,1fr)_440px] xl:grid-cols-[minmax(0,1fr)_480px]">
+      <motion.div
+        animate="show"
+        className="grid min-h-svh lg:grid-cols-[minmax(0,1fr)_440px] xl:grid-cols-[minmax(0,1fr)_480px]"
+        initial="hidden"
+        variants={expressiveContainer}
+      >
         <section className="relative flex min-h-[68svh] flex-col overflow-hidden bg-background px-6 py-6 sm:px-10 lg:min-h-svh lg:px-14">
-          <div className="absolute inset-x-0 top-0 h-2 bg-[linear-gradient(90deg,var(--md-sys-color-primary)_0_42%,var(--md-sys-color-secondary)_42%_72%,var(--md-sys-color-tertiary)_72%_100%)]" />
+          <motion.div
+            animate={{ scaleX: 1 }}
+            className="absolute inset-x-0 top-0 h-2 origin-left bg-[linear-gradient(90deg,var(--md-sys-color-primary)_0_42%,var(--md-sys-color-secondary)_42%_72%,var(--md-sys-color-tertiary)_72%_100%)]"
+            initial={{ scaleX: 0 }}
+            transition={{ ...materialSpring, delay: 0.1 }}
+          />
 
-          <header className="expressive-enter flex items-center justify-between gap-6">
+          <motion.header
+            className="flex items-center justify-between gap-6"
+            variants={expressiveItem}
+          >
             <div className="flex items-center gap-4">
               <span className="grid size-16 place-items-center rounded-[var(--md-sys-shape-corner-large-increased)] bg-primary text-2xl font-bold text-on-primary">
                 Q
@@ -58,10 +80,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <span className="hidden rounded-full bg-secondary-container px-4 py-2 md-label-large md-emphasized text-on-secondary-container sm:inline-flex">
               Private console
             </span>
-          </header>
+          </motion.header>
 
           <div className="grid flex-1 items-center gap-10 py-12 xl:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.75fr)]">
-            <div className="expressive-enter max-w-3xl">
+            <motion.div className="max-w-3xl" variants={expressiveItem}>
               <p className="mb-5 inline-flex rounded-full bg-tertiary-container px-4 py-2 md-label-large md-emphasized text-on-tertiary-container">
                 Quotas normalized at the relay
               </p>
@@ -72,12 +94,15 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 Provider credentials stay server-side. Clients receive only the
                 quota state they are allowed to read.
               </p>
-            </div>
+            </motion.div>
 
             <RelayMap />
           </div>
 
-          <div className="expressive-enter-delayed grid divide-y divide-outline-variant overflow-hidden border-y border-outline-variant sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <motion.div
+            className="grid divide-y divide-outline-variant overflow-hidden border-y border-outline-variant sm:grid-cols-3 sm:divide-x sm:divide-y-0"
+            variants={expressiveContainer}
+          >
             <SignalCell
               icon={<RadioTower className="size-5" aria-hidden="true" />}
               label="Relay"
@@ -93,17 +118,20 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               label="Clients"
               value="Token scoped"
             />
-          </div>
+          </motion.div>
         </section>
 
-        <aside className="flex items-center border-t border-outline-variant bg-surface-container px-6 py-8 sm:px-10 lg:border-l lg:border-t-0 lg:px-10 xl:px-12">
+        <motion.aside
+          className="flex items-center border-t border-outline-variant bg-surface-container px-6 py-8 sm:px-10 lg:border-l lg:border-t-0 lg:px-10 xl:px-12"
+          variants={expressiveItem}
+        >
           <AuthPanel
             errorMessage={errorMessage}
             isConfigured={isConfigured}
             user={user}
           />
-        </aside>
-      </div>
+        </motion.aside>
+      </motion.div>
     </main>
   );
 }
@@ -131,13 +159,42 @@ function RelayMap() {
   ];
 
   return (
-    <div className="expressive-enter-delayed hidden xl:block">
+    <motion.div className="hidden xl:block" variants={expressiveItem}>
       <div className="relative min-h-[420px]">
-        <div className="absolute left-0 top-5 h-[22rem] w-28 rounded-full bg-primary-container" />
-        <div className="absolute left-[4.5rem] top-20 h-72 w-28 rounded-full bg-secondary-container" />
-        <div className="absolute left-36 top-36 h-56 w-28 rounded-full bg-tertiary-container" />
+        <motion.div
+          animate={{ y: [0, -10, 0], scaleY: [1, 1.04, 1] }}
+          className="absolute left-0 top-5 h-[22rem] w-28 rounded-full bg-primary-container"
+          transition={{
+            duration: 6,
+            ease: materialEmphasized,
+            repeat: Infinity,
+          }}
+        />
+        <motion.div
+          animate={{ y: [0, 12, 0], scaleY: [1, 0.96, 1] }}
+          className="absolute left-[4.5rem] top-20 h-72 w-28 rounded-full bg-secondary-container"
+          transition={{
+            delay: 0.3,
+            duration: 6.8,
+            ease: materialEmphasized,
+            repeat: Infinity,
+          }}
+        />
+        <motion.div
+          animate={{ y: [0, -8, 0], scaleY: [1, 1.03, 1] }}
+          className="absolute left-36 top-36 h-56 w-28 rounded-full bg-tertiary-container"
+          transition={{
+            delay: 0.6,
+            duration: 6.2,
+            ease: materialEmphasized,
+            repeat: Infinity,
+          }}
+        />
 
-        <div className="absolute bottom-0 left-14 right-0 overflow-hidden rounded-[var(--md-sys-shape-corner-extra-extra-large)] bg-surface-container-low">
+        <motion.div
+          className="absolute bottom-0 left-14 right-0 overflow-hidden rounded-[var(--md-sys-shape-corner-extra-extra-large)] bg-surface-container-low"
+          whileHover={materialHover}
+        >
           <div className="flex items-center gap-3 border-b border-outline-variant px-5 py-4">
             <span className="grid size-11 place-items-center rounded-full bg-primary text-on-primary">
               <Route className="size-5" aria-hidden="true" />
@@ -150,7 +207,7 @@ function RelayMap() {
             </div>
           </div>
           <div className="divide-y divide-outline-variant">
-            {rows.map((row) => (
+            {rows.map((row, index) => (
               <div key={row.label} className="px-5 py-4">
                 <div className="mb-2 flex items-center justify-between gap-4">
                   <p className="md-label-large md-emphasized">{row.label}</p>
@@ -159,17 +216,22 @@ function RelayMap() {
                   </p>
                 </div>
                 <div className="h-1 overflow-hidden rounded-full bg-surface-container-highest">
-                  <div
+                  <motion.div
+                    animate={{ width: row.width }}
                     className={`h-full rounded-full ${row.tone}`}
-                    style={{ width: row.width }}
+                    initial={{ width: 0 }}
+                    transition={{
+                      ...materialSpring,
+                      delay: 0.26 + index * 0.08,
+                    }}
                   />
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -183,7 +245,11 @@ function SignalCell({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-4 px-4 py-4">
+    <motion.div
+      className="flex items-center gap-4 px-4 py-4"
+      variants={expressiveItem}
+      whileTap={materialTap}
+    >
       <span className="grid size-11 shrink-0 place-items-center rounded-full bg-secondary-container text-on-secondary-container">
         {icon}
       </span>
@@ -193,6 +259,6 @@ function SignalCell({
           {value}
         </span>
       </span>
-    </div>
+    </motion.div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { Check, Palette } from "lucide-react";
 import {
   isMaterialThemeId,
@@ -10,6 +11,13 @@ import {
   type MaterialThemeId,
 } from "@/app/components/material/theme-colors";
 import { applyMaterialTheme } from "@/app/components/material/theme-provider";
+import {
+  expressiveItem,
+  expressiveListItem,
+  materialHover,
+  materialSpring,
+  materialTap,
+} from "@/app/components/material/motion";
 import { cn } from "@/lib/utils";
 
 export function ThemeColorSettings() {
@@ -28,7 +36,7 @@ export function ThemeColorSettings() {
     materialThemePresets[0];
 
   return (
-    <section>
+    <motion.section layout variants={expressiveItem}>
       <div className="mb-5 flex min-w-0 gap-4">
         <div className="grid size-12 shrink-0 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-primary-container text-on-primary-container">
           <Palette className="size-6" aria-hidden="true" />
@@ -44,16 +52,21 @@ export function ThemeColorSettings() {
         </div>
       </div>
 
+      <LayoutGroup id="material-theme-colors">
       <div className="grid gap-6 border-y border-outline-variant py-5 lg:grid-cols-[minmax(0,1fr)_280px]">
         <div className="divide-y divide-outline-variant overflow-hidden rounded-[var(--md-sys-shape-corner-extra-large)] bg-surface-container-low">
           {materialThemePresets.map((theme) => {
             const isSelected = theme.id === selectedThemeId;
 
             return (
-              <button
+              <motion.button
                 key={theme.id}
                 type="button"
                 aria-pressed={isSelected}
+                layout
+                variants={expressiveListItem}
+                whileHover={materialHover}
+                whileTap={materialTap}
                 onClick={() => selectTheme(theme.id)}
                 className={cn(
                   "md-state-layer grid w-full gap-4 px-4 py-4 text-left transition-colors sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center",
@@ -73,13 +86,22 @@ export function ThemeColorSettings() {
 
                 <span className="flex items-center gap-3">
                   <RoleSwatches roles={theme.roles} />
-                  {isSelected ? (
-                    <span className="grid size-9 place-items-center rounded-full bg-primary text-on-primary">
-                      <Check className="size-5" aria-hidden="true" />
-                    </span>
-                  ) : null}
+                  <AnimatePresence initial={false}>
+                    {isSelected ? (
+                      <motion.span
+                        className="grid size-9 place-items-center rounded-full bg-primary text-on-primary"
+                        initial={{ scale: 0.72, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.72, opacity: 0 }}
+                        layoutId="theme-selected-check"
+                        transition={materialSpring}
+                      >
+                        <Check className="size-5" aria-hidden="true" />
+                      </motion.span>
+                    ) : null}
+                  </AnimatePresence>
                 </span>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -88,12 +110,20 @@ export function ThemeColorSettings() {
           <p className="mb-3 md-label-large md-emphasized text-on-surface">
             Role preview
           </p>
-          <div className="overflow-hidden rounded-[var(--md-sys-shape-corner-extra-large)] bg-surface-container-low">
-            <div
+          <motion.div
+            key={selectedTheme.id}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="overflow-hidden rounded-[var(--md-sys-shape-corner-extra-large)] bg-surface-container-low"
+            initial={{ opacity: 0, scale: 0.98, y: 8 }}
+            transition={materialSpring}
+          >
+            <motion.div
+              animate={{ backgroundColor: selectedTheme.roles.primary }}
               className="h-20"
               style={{
                 background: selectedTheme.roles.primary,
               }}
+              transition={materialSpring}
             />
             <div className="grid grid-cols-3">
               <RoleBlock label="Primary" value={selectedTheme.roles.primary} />
@@ -103,14 +133,15 @@ export function ThemeColorSettings() {
               />
               <RoleBlock label="Tertiary" value={selectedTheme.roles.tertiary} />
             </div>
-          </div>
+          </motion.div>
           <p className="mt-3 md-body-small text-on-surface-variant">
             Seed {selectedTheme.seed}. Containers and surface tint are mapped in
             CSS variables for the whole app.
           </p>
         </div>
       </div>
-    </section>
+      </LayoutGroup>
+    </motion.section>
   );
 }
 

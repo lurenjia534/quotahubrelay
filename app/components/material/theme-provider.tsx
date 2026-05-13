@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { MotionConfig } from "motion/react";
 import {
   isMaterialThemeId,
   materialThemeCookieName,
@@ -8,6 +9,7 @@ import {
   materialThemeStorageKey,
   type MaterialThemeId,
 } from "@/app/components/material/theme-colors";
+import { materialSpring } from "@/app/components/material/motion";
 
 export function applyMaterialTheme(themeId: MaterialThemeId) {
   document.documentElement.dataset.materialTheme = themeId;
@@ -29,5 +31,9 @@ export function MaterialThemeProvider({
     applyMaterialTheme(themeId);
   }, [initialTheme]);
 
-  return children;
+  return (
+    <MotionConfig reducedMotion="user" transition={materialSpring}>
+      {children}
+    </MotionConfig>
+  );
 }

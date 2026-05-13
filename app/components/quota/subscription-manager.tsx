@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   Check,
   Database,
@@ -22,6 +23,14 @@ import {
   MaterialLinearProgressIndicator,
   MaterialTextField,
 } from "@/app/components/material/primitives";
+import {
+  expressiveContainer,
+  expressiveItem,
+  expressiveListItem,
+  materialHover,
+  materialQuickSpring,
+  materialTap,
+} from "@/app/components/material/motion";
 import { cn } from "@/lib/utils";
 
 type SubscriptionManagerProps = {
@@ -121,16 +130,37 @@ export function SubscriptionManager({
   }
 
   return (
-    <div className="space-y-6">
-      {message ? (
-        <MaterialAlert
-          variant={message.toLowerCase().includes("failed") ? "error" : "success"}
-        >
-          {message}
-        </MaterialAlert>
-      ) : null}
+    <motion.div
+      animate="show"
+      className="space-y-6"
+      initial="hidden"
+      variants={expressiveContainer}
+    >
+      <AnimatePresence mode="popLayout">
+        {message ? (
+          <motion.div
+            key={message}
+            layout
+            variants={expressiveListItem}
+            initial="hidden"
+            animate="show"
+            exit="exit"
+          >
+            <MaterialAlert
+              variant={
+                message.toLowerCase().includes("failed") ? "error" : "success"
+              }
+            >
+              {message}
+            </MaterialAlert>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
-      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <motion.div
+        className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_380px]"
+        variants={expressiveItem}
+      >
         <section className="min-w-0">
           <div className="grid gap-4 border-b border-outline-variant pb-5 sm:grid-cols-[1fr_auto] sm:items-end">
             <div className="flex min-w-0 gap-4">
@@ -153,8 +183,17 @@ export function SubscriptionManager({
           </div>
 
           <div className="divide-y divide-outline-variant">
+            <AnimatePresence initial={false} mode="popLayout">
             {subscriptions.length === 0 ? (
-              <div className="py-14 text-center">
+              <motion.div
+                key="empty-subscriptions"
+                layout
+                className="py-14 text-center"
+                variants={expressiveListItem}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+              >
                 <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container">
                   <Layers3 className="size-6" aria-hidden="true" />
                 </div>
@@ -164,7 +203,7 @@ export function SubscriptionManager({
                 <p className="mx-auto mt-2 max-w-md md-body-medium text-on-surface-variant">
                   Add a provider to collect quota snapshots for remote clients.
                 </p>
-              </div>
+              </motion.div>
             ) : (
               subscriptions.map((subscription) => (
                 <SubscriptionItem
@@ -176,10 +215,14 @@ export function SubscriptionManager({
                 />
               ))
             )}
+            </AnimatePresence>
           </div>
         </section>
 
-        <aside className="xl:sticky xl:top-28 xl:self-start xl:border-l xl:border-outline-variant xl:pl-8">
+        <motion.aside
+          className="xl:sticky xl:top-28 xl:self-start xl:border-l xl:border-outline-variant xl:pl-8"
+          layout
+        >
           <div className="mb-5 flex items-start gap-4">
             <div className="grid size-12 shrink-0 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-tertiary-container text-on-tertiary-container">
               <Plus className="size-6" aria-hidden="true" />
@@ -211,9 +254,12 @@ export function SubscriptionManager({
                 ).length;
 
                 return (
-                  <button
+                  <motion.button
                     key={provider.id}
                     type="button"
+                    layout
+                    whileHover={materialHover}
+                    whileTap={materialTap}
                     onClick={() => {
                       setSelectedProviderId(provider.id);
                       setCredentialValues({});
@@ -251,14 +297,24 @@ export function SubscriptionManager({
                     {isSelected ? (
                       <Check className="size-5 shrink-0" aria-hidden="true" />
                     ) : null}
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
           </div>
 
-          {selectedProvider ? (
-            <form onSubmit={createSubscription} className="mt-6 space-y-4">
+          <AnimatePresence mode="popLayout">
+            {selectedProvider ? (
+            <motion.form
+              key={selectedProvider.id}
+              layout
+              onSubmit={createSubscription}
+              className="mt-6 space-y-4"
+              variants={expressiveListItem}
+              initial="hidden"
+              animate="show"
+              exit="exit"
+            >
               <MaterialTextField
                 label="Display name"
                 value={customTitle}
@@ -291,17 +347,26 @@ export function SubscriptionManager({
                 <Plus className="size-5" aria-hidden="true" />
                 {pendingAction === "create" ? "Connecting..." : "Connect provider"}
               </MaterialButton>
-            </form>
-          ) : (
-            <div className="mt-6 border-t border-outline-variant py-6 text-center">
+            </motion.form>
+            ) : (
+            <motion.div
+              key="no-provider"
+              layout
+              className="mt-6 border-t border-outline-variant py-6 text-center"
+              variants={expressiveListItem}
+              initial="hidden"
+              animate="show"
+              exit="exit"
+            >
               <p className="md-body-medium text-on-surface-variant">
                 Select a provider to enter credentials.
               </p>
-            </div>
-          )}
-        </aside>
-      </div>
-    </div>
+            </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.aside>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -319,7 +384,14 @@ function SubscriptionItem({
   const resources = subscription.snapshot?.resources ?? [];
 
   return (
-    <article className="py-6">
+    <motion.article
+      layout
+      className="py-6"
+      variants={expressiveListItem}
+      initial="hidden"
+      animate="show"
+      exit="exit"
+    >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -359,24 +431,34 @@ function SubscriptionItem({
       </div>
 
       {resources.length > 0 ? (
-        <div className="mt-5 divide-y divide-outline-variant overflow-hidden rounded-[var(--md-sys-shape-corner-extra-large)] bg-surface-container-low">
+        <motion.div
+          layout
+          className="mt-5 divide-y divide-outline-variant overflow-hidden rounded-[var(--md-sys-shape-corner-extra-large)] bg-surface-container-low"
+        >
           {resources.map((resource) => (
             <ResourceUsage key={resource.key} resource={resource} />
           ))}
-        </div>
+        </motion.div>
       ) : (
-        <p className="mt-5 border-l-4 border-outline-variant bg-surface-container-low px-4 py-3 md-body-medium text-on-surface-variant">
+        <motion.p
+          layout
+          className="mt-5 border-l-4 border-outline-variant bg-surface-container-low px-4 py-3 md-body-medium text-on-surface-variant"
+          transition={materialQuickSpring}
+        >
           No quota snapshot is available yet. Refresh this subscription to fetch
           the latest provider state.
-        </p>
+        </motion.p>
       )}
-    </article>
+    </motion.article>
   );
 }
 
 function ResourceUsage({ resource }: { resource: QuotaResource }) {
   return (
-    <div className="grid gap-4 px-4 py-4 lg:grid-cols-[minmax(160px,240px)_1fr]">
+    <motion.div
+      layout
+      className="grid gap-4 px-4 py-4 lg:grid-cols-[minmax(160px,240px)_1fr]"
+    >
       <div className="min-w-0">
         <h4 className="truncate md-title-small md-emphasized text-on-surface">
           {resource.title}
@@ -395,7 +477,7 @@ function ResourceUsage({ resource }: { resource: QuotaResource }) {
           />
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }
 

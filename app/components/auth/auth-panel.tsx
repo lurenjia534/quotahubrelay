@@ -1,8 +1,13 @@
+import * as motion from "motion/react-client";
 import { ShieldAlert, ShieldCheck } from "lucide-react";
 import { SignInWithGithub } from "@/app/components/auth/sign-in-with-github";
 import { SignOutButton } from "@/app/components/auth/sign-out-button";
 import { UserSummary } from "@/app/components/auth/user-summary";
 import { MaterialAlert } from "@/app/components/material/primitives";
+import {
+  expressiveContainer,
+  expressiveItem,
+} from "@/app/components/material/motion";
 
 type AuthPanelProps = {
   errorMessage: string | null;
@@ -18,15 +23,23 @@ export function AuthPanel({ errorMessage, isConfigured, user }: AuthPanelProps) 
   const hasDeniedUser = Boolean(user);
 
   return (
-    <section className="expressive-enter-delayed w-full">
-      <div className="mb-10">
-        <span className="mb-6 grid size-16 place-items-center rounded-[var(--md-sys-shape-corner-large-increased)] bg-primary-container text-on-primary-container">
+    <motion.section
+      animate="show"
+      className="w-full"
+      initial="hidden"
+      variants={expressiveContainer}
+    >
+      <motion.div className="mb-10" variants={expressiveItem}>
+        <motion.span
+          className="mb-6 grid size-16 place-items-center rounded-[var(--md-sys-shape-corner-large-increased)] bg-primary-container text-on-primary-container"
+          layout
+        >
           {hasDeniedUser ? (
             <ShieldAlert className="size-8" aria-hidden="true" />
           ) : (
             <ShieldCheck className="size-8" aria-hidden="true" />
           )}
-        </span>
+        </motion.span>
         <h2 className="md-headline-medium md-emphasized text-on-surface">
           {hasDeniedUser ? "Access denied" : "Sign in"}
         </h2>
@@ -35,9 +48,9 @@ export function AuthPanel({ errorMessage, isConfigured, user }: AuthPanelProps) 
             ? "This GitHub account is not allowed."
             : "Use an approved GitHub account to open the relay workspace."}
         </p>
-      </div>
+      </motion.div>
 
-      <div className="border-y border-outline-variant py-6">
+      <motion.div className="border-y border-outline-variant py-6" variants={expressiveItem}>
         <div className="space-y-4">
           {errorMessage ? (
             <MaterialAlert title="Unable to continue" variant="error">
@@ -54,11 +67,14 @@ export function AuthPanel({ errorMessage, isConfigured, user }: AuthPanelProps) 
             <SignInWithGithub disabled={!isConfigured} />
           )}
         </div>
-      </div>
+      </motion.div>
 
-      <p className="mt-6 md-label-medium text-on-surface-variant">
+      <motion.p
+        className="mt-6 md-label-medium text-on-surface-variant"
+        variants={expressiveItem}
+      >
         &copy; {new Date().getFullYear()} QuotaHub Relay
-      </p>
-    </section>
+      </motion.p>
+    </motion.section>
   );
 }
