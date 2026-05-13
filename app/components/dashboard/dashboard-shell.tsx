@@ -1,12 +1,13 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
+import { Gauge, Settings } from "lucide-react";
 import { SignOutButton } from "@/app/components/auth/sign-out-button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
+import { MaterialAvatar } from "@/app/components/material/primitives";
 import { cn } from "@/lib/utils";
 
 type DashboardShellProps = {
   activeItem: "overview" | "settings";
-  children: React.ReactNode;
+  children: ReactNode;
   description: string;
   title: string;
   user: {
@@ -16,6 +17,21 @@ type DashboardShellProps = {
   };
 };
 
+const navItems = [
+  {
+    href: "/dashboard",
+    icon: Gauge,
+    id: "overview",
+    label: "Overview",
+  },
+  {
+    href: "/dashboard/settings",
+    icon: Settings,
+    id: "settings",
+    label: "Settings",
+  },
+] as const;
+
 export function DashboardShell({
   activeItem,
   children,
@@ -24,76 +40,120 @@ export function DashboardShell({
   user,
 }: DashboardShellProps) {
   const displayName = user.name || user.email || "User";
-  const initials = displayName.slice(0, 1).toUpperCase();
 
   return (
-    <div className="min-h-full flex-1 bg-background">
-      <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="mx-auto flex min-h-16 w-full max-w-6xl flex-wrap items-center gap-x-8 gap-y-3 px-4 py-3 sm:px-6 lg:px-8">
-          <div className="flex min-w-0 flex-1 items-center gap-8">
-            <Link
-              href="/dashboard"
-              className="shrink-0 font-heading text-base font-semibold tracking-tight text-foreground"
-            >
-              QuotaHub Relay
+    <div className="min-h-full bg-background text-on-surface lg:grid lg:grid-cols-[96px_minmax(0,1fr)]">
+      <aside className="sticky top-0 hidden h-svh border-r border-outline-variant bg-surface-container-low lg:flex lg:flex-col lg:items-center lg:justify-between lg:py-4">
+        <Link
+          href="/dashboard"
+          aria-label="QuotaHub Relay"
+          className="md-state-layer grid size-16 place-items-center rounded-[var(--md-sys-shape-corner-extra-large)] bg-primary text-xl font-bold text-on-primary"
+        >
+          Q
+        </Link>
+
+        <nav aria-label="Dashboard" className="flex flex-col items-center gap-3">
+          {navItems.map((item) => (
+            <RailItem
+              key={item.id}
+              active={activeItem === item.id}
+              href={item.href}
+              icon={<item.icon className="size-6" aria-hidden="true" />}
+              label={item.label}
+            />
+          ))}
+        </nav>
+
+        <MaterialAvatar image={user.image} name={displayName} size="sm" />
+      </aside>
+
+      <div className="min-w-0">
+        <header className="sticky top-0 z-30 border-b border-outline-variant bg-surface/90 backdrop-blur-xl">
+          <div className="flex min-h-20 items-center gap-4 px-4 sm:px-6 lg:px-8">
+            <Link href="/dashboard" className="flex items-center gap-3 lg:hidden">
+              <span className="grid size-11 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-primary font-bold text-on-primary">
+                Q
+              </span>
+              <span className="min-w-0">
+                <span className="block md-title-medium md-emphasized">
+                  QuotaHub Relay
+                </span>
+                <span className="block md-label-medium text-on-surface-variant">
+                  Server quota relay
+                </span>
+              </span>
             </Link>
 
-            <nav aria-label="Dashboard" className="flex items-center gap-1">
-              <NavItem
-                active={activeItem === "overview"}
-                href="/dashboard"
-                label="Overview"
-              />
-              <NavItem
-                active={activeItem === "settings"}
-                href="/dashboard/settings"
-                label="Settings"
-              />
-            </nav>
-          </div>
-
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex min-w-0 items-center gap-2">
-              <Avatar size="sm">
-                {user.image ? (
-                  <AvatarImage src={user.image} alt={displayName} />
-                ) : null}
-                <AvatarFallback>{initials}</AvatarFallback>
-              </Avatar>
-              <span className="max-w-32 truncate text-sm font-medium text-foreground sm:max-w-44">
-                {displayName}
-              </span>
+            <div className="hidden min-w-0 flex-1 lg:block">
+              <p className="md-label-large text-primary">QuotaHub Relay</p>
+              <h1 className="md-headline-small md-emphasized truncate text-on-surface">
+                {title}
+              </h1>
             </div>
-            <SignOutButton className="w-auto" />
+
+            <nav
+              aria-label="Dashboard"
+              className="ml-auto flex items-center gap-1 rounded-full bg-surface-container-high p-1 lg:hidden"
+            >
+              {navItems.map((item) => (
+                <TopNavItem
+                  key={item.id}
+                  active={activeItem === item.id}
+                  href={item.href}
+                  icon={<item.icon className="size-4" aria-hidden="true" />}
+                  label={item.label}
+                />
+              ))}
+            </nav>
+
+            <div className="hidden min-w-0 items-center gap-3 sm:flex">
+              <MaterialAvatar image={user.image} name={displayName} size="sm" />
+              <div className="hidden min-w-0 xl:block">
+                <p className="max-w-48 truncate md-label-large md-emphasized text-on-surface">
+                  {displayName}
+                </p>
+                <p className="max-w-48 truncate md-label-medium text-on-surface-variant">
+                  Authorized
+                </p>
+              </div>
+              <SignOutButton className="hidden w-auto md:inline-flex" />
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="pb-6">
-          <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
-            {title}
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            {description}
-          </p>
-        </div>
+        <main className="mx-auto w-full max-w-[1360px] px-4 py-6 sm:px-6 lg:px-8">
+          <div className="expressive-enter grid gap-3 pb-5 lg:hidden">
+            <p className="md-label-large text-primary">QuotaHub Relay</p>
+            <h1 className="md-headline-small md-emphasized text-on-surface">
+              {title}
+            </h1>
+          </div>
 
-        <Separator />
+          <div className="grid gap-2 border-b border-outline-variant pb-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <p className="max-w-3xl md-body-medium text-on-surface-variant">
+              {description}
+            </p>
+            <p className="hidden md-label-large text-on-surface-variant lg:block">
+              Server-rendered on demand
+            </p>
+          </div>
 
-        {children}
-      </main>
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
 
-function NavItem({
+function RailItem({
   active,
   href,
+  icon,
   label,
 }: {
   active: boolean;
   href: string;
+  icon: ReactNode;
   label: string;
 }) {
   return (
@@ -101,13 +161,52 @@ function NavItem({
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "inline-flex h-8 items-center rounded-md px-3 text-sm font-medium transition-colors",
+        "group flex w-20 flex-col items-center gap-1 rounded-[var(--md-sys-shape-corner-extra-large)] px-2 py-3 text-center md-label-medium",
+        "transition-colors duration-300 ease-[var(--md-sys-motion-easing-standard)]",
         active
-          ? "bg-muted text-foreground"
-          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+          ? "text-on-secondary-container"
+          : "text-on-surface-variant hover:text-on-surface",
       )}
     >
-      {label}
+      <span
+        className={cn(
+          "md-state-layer grid h-8 w-14 place-items-center rounded-full transition-colors",
+          active
+            ? "bg-secondary-container"
+            : "group-hover:bg-surface-container-highest",
+        )}
+      >
+        {icon}
+      </span>
+      <span>{label}</span>
+    </Link>
+  );
+}
+
+function TopNavItem({
+  active,
+  href,
+  icon,
+  label,
+}: {
+  active: boolean;
+  href: string;
+  icon: ReactNode;
+  label: string;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "md-state-layer inline-flex h-10 min-w-10 items-center justify-center gap-2 rounded-full px-3 md-label-large md-emphasized",
+        active
+          ? "bg-secondary-container text-on-secondary-container"
+          : "text-on-surface-variant",
+      )}
+    >
+      {icon}
+      <span className="hidden sm:inline">{label}</span>
     </Link>
   );
 }

@@ -356,7 +356,7 @@ If Next.js starts on another port, update `BETTER_AUTH_URL` and the GitHub OAuth
 
 ### `next/font` fails during build
 
-This app uses `next/font/google` for Geist fonts. Production builds need network access to fetch font files unless the app is changed to local fonts.
+This app uses `next/font/google` for Roboto Flex and Roboto Mono. Production builds need network access to fetch font files unless the app is changed to local fonts.
 
 ## Development Notes
 

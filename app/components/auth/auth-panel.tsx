@@ -1,15 +1,8 @@
+import { ShieldAlert, ShieldCheck } from "lucide-react";
 import { SignInWithGithub } from "@/app/components/auth/sign-in-with-github";
 import { SignOutButton } from "@/app/components/auth/sign-out-button";
 import { UserSummary } from "@/app/components/auth/user-summary";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { MaterialAlert } from "@/app/components/material/primitives";
 
 type AuthPanelProps = {
   errorMessage: string | null;
@@ -25,22 +18,32 @@ export function AuthPanel({ errorMessage, isConfigured, user }: AuthPanelProps) 
   const hasDeniedUser = Boolean(user);
 
   return (
-    <Card size="sm">
-      <CardHeader>
-        <CardTitle>{hasDeniedUser ? "Access denied" : "Sign in"}</CardTitle>
-        <CardDescription>
-          {hasDeniedUser
-            ? "This GitHub account is not allowed."
-            : "Continue with an approved GitHub account."}
-        </CardDescription>
-      </CardHeader>
+    <section className="expressive-enter-delayed rounded-[var(--md-sys-shape-corner-extra-extra-large)] bg-surface px-5 py-6 shadow-[0_8px_24px_rgb(0_0_0/0.10)] sm:px-6 sm:py-7">
+      <div className="mb-6 flex items-start gap-4">
+        <span className="grid size-14 place-items-center rounded-[var(--md-sys-shape-corner-large-increased)] bg-primary-container text-on-primary-container">
+          {hasDeniedUser ? (
+            <ShieldAlert className="size-7" aria-hidden="true" />
+          ) : (
+            <ShieldCheck className="size-7" aria-hidden="true" />
+          )}
+        </span>
+        <div>
+          <h2 className="md-headline-small md-emphasized text-on-surface">
+            {hasDeniedUser ? "Access denied" : "Sign in"}
+          </h2>
+          <p className="mt-1 md-body-medium text-on-surface-variant">
+            {hasDeniedUser
+              ? "This GitHub account is not allowed."
+              : "Continue with an approved GitHub account."}
+          </p>
+        </div>
+      </div>
 
-      <CardContent className="space-y-4">
+      <div className="space-y-4">
         {errorMessage ? (
-          <Alert variant="destructive">
-            <AlertTitle>Unable to continue</AlertTitle>
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
+          <MaterialAlert title="Unable to continue" variant="error">
+            {errorMessage}
+          </MaterialAlert>
         ) : null}
 
         {user ? (
@@ -51,13 +54,11 @@ export function AuthPanel({ errorMessage, isConfigured, user }: AuthPanelProps) 
         ) : (
           <SignInWithGithub disabled={!isConfigured} />
         )}
-      </CardContent>
+      </div>
 
-      <CardFooter>
-        <p className="w-full text-center text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} QuotaHub Relay
-        </p>
-      </CardFooter>
-    </Card>
+      <p className="mt-8 text-center md-label-medium text-on-surface-variant">
+        &copy; {new Date().getFullYear()} QuotaHub Relay
+      </p>
+    </section>
   );
 }

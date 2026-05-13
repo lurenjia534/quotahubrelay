@@ -1,35 +1,15 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { KeyRound, ShieldCheck, Trash2, Wifi } from "lucide-react";
 import { RelayClientToken } from "@/app/lib/quota/types";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemGroup,
-  ItemTitle,
-} from "@/components/ui/item";
-import { Switch } from "@/components/ui/switch";
+  MaterialAlert,
+  MaterialBadge,
+  MaterialButton,
+  MaterialSwitch,
+  MaterialTextField,
+} from "@/app/components/material/primitives";
 
 type ClientAccessSettingsProps = {
   initialClientTokens: RelayClientToken[];
@@ -121,171 +101,178 @@ export function ClientAccessSettings({
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Remote access</CardTitle>
-          <CardDescription>
-            Control whether generated Bearer tokens can reach relay endpoints.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <FieldGroup>
-            <Field
-              orientation="responsive"
-              className="@md/field-group:items-center"
-            >
-              <FieldContent>
-                <FieldLabel htmlFor="remote-client-access">
-                  Remote client mode
-                </FieldLabel>
-                <FieldDescription>
-                  {remoteClientAccessEnabled
-                    ? "Client tokens can read relay endpoints."
-                    : "Relay endpoints reject client-token requests."}
-                </FieldDescription>
-              </FieldContent>
+    <div className="grid gap-8 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+      <section>
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div className="flex min-w-0 gap-4">
+            <div className="grid size-12 shrink-0 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-primary-container text-on-primary-container">
+              <Wifi className="size-6" aria-hidden="true" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="md-headline-small md-emphasized text-on-surface">
+                Remote access
+              </h2>
+              <p className="mt-1 md-body-medium text-on-surface-variant">
+                Control whether Bearer tokens can reach relay endpoints.
+              </p>
+            </div>
+          </div>
+          <MaterialBadge
+            variant={remoteClientAccessEnabled ? "success" : "outline"}
+          >
+            {remoteClientAccessEnabled ? "Enabled" : "Disabled"}
+          </MaterialBadge>
+        </div>
 
-              <div className="flex items-center gap-3">
-                <Badge
-                  variant={remoteClientAccessEnabled ? "default" : "secondary"}
-                >
-                  {remoteClientAccessEnabled ? "Enabled" : "Disabled"}
-                </Badge>
-                <Switch
-                  id="remote-client-access"
-                  checked={remoteClientAccessEnabled}
-                  disabled={pendingAction === "settings"}
-                  onCheckedChange={updateRemoteClientAccess}
-                />
-              </div>
-            </Field>
-          </FieldGroup>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Client tokens</CardTitle>
-          <CardDescription>
-            Create scoped tokens for trusted Android clients. The full token is
-            shown once.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <form onSubmit={createClientToken}>
-            <FieldGroup className="gap-3 @container/field-group sm:flex-row sm:items-end">
-              <Field className="min-w-0 flex-1">
-                <FieldLabel htmlFor="client-token-name">Token name</FieldLabel>
-                <Input
-                  id="client-token-name"
-                  value={clientTokenName}
-                  onChange={(event) => setClientTokenName(event.target.value)}
-                  placeholder="Android client"
-                />
-              </Field>
-
-              <Button
-                type="submit"
-                disabled={pendingAction === "create"}
-                className="w-full sm:w-auto"
+        <div className="border-y border-outline-variant py-4">
+          <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+            <div>
+              <label
+                htmlFor="remote-client-access"
+                className="md-title-small md-emphasized text-on-surface"
               >
-                {pendingAction === "create" ? "Creating..." : "Create token"}
-              </Button>
-            </FieldGroup>
-          </form>
-
-          {newClientToken ? (
-            <Alert className="border-amber-500/30 bg-amber-500/10">
-              <AlertTitle className="text-amber-900 dark:text-amber-100">
-                Copy this token now
-              </AlertTitle>
-              <AlertDescription className="text-amber-900/80 dark:text-amber-100/80">
-                It will not be shown again.
-              </AlertDescription>
-              <code className="mt-3 block break-all rounded-md bg-background px-2.5 py-2 font-mono text-xs text-foreground ring-1 ring-border">
-                {newClientToken}
-              </code>
-            </Alert>
-          ) : null}
-
-          {message ? (
-            <Alert variant="destructive">
-              <AlertDescription>{message}</AlertDescription>
-            </Alert>
-          ) : null}
-
-          <div className="space-y-3">
-            <div className="grid gap-1 sm:grid-cols-[1fr_auto] sm:items-end">
-              <div>
-                <h3 className="text-sm font-medium text-foreground">
-                  Active tokens
-                </h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Revoke tokens that no longer match a trusted device.
-                </p>
-              </div>
-              <p className="text-sm tabular-nums text-muted-foreground">
-                {clientTokens.length} total
+                Remote client mode
+              </label>
+              <p className="mt-1 md-body-medium text-on-surface-variant">
+                {remoteClientAccessEnabled
+                  ? "Client tokens can read relay endpoints."
+                  : "Relay endpoints reject client-token requests."}
               </p>
             </div>
 
-            <ItemGroup className="gap-0 divide-y rounded-lg border">
-              {clientTokens.length === 0 ? (
-                <Item
-                  className="rounded-none border-0 px-4 py-10"
-                  role="listitem"
-                >
-                  <ItemContent>
-                    <ItemTitle>No client tokens</ItemTitle>
-                    <ItemDescription>
-                      Create a token when a trusted device is ready to connect.
-                    </ItemDescription>
-                  </ItemContent>
-                </Item>
-              ) : (
-                clientTokens.map((token) => {
-                  const isRevoking = pendingAction === `delete:${token.id}`;
-
-                  return (
-                    <Item
-                      key={token.id}
-                      className="rounded-none border-0 px-4 py-4"
-                      role="listitem"
-                    >
-                      <ItemContent className="min-w-0">
-                        <ItemTitle className="max-w-full">
-                          <span className="truncate">{token.name}</span>
-                          {token.lastUsedAt ? (
-                            <Badge variant="outline">Active</Badge>
-                          ) : (
-                            <Badge variant="secondary">Unused</Badge>
-                          )}
-                        </ItemTitle>
-                        <ItemDescription>
-                          {formatTokenMeta(token)}
-                        </ItemDescription>
-                      </ItemContent>
-
-                      <ItemActions className="basis-full sm:basis-auto">
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => revokeClientToken(token.id)}
-                          disabled={isRevoking}
-                        >
-                          <Trash2 className="h-4 w-4" aria-hidden="true" />
-                          {isRevoking ? "Revoking..." : "Revoke"}
-                        </Button>
-                      </ItemActions>
-                    </Item>
-                  );
-                })
-              )}
-            </ItemGroup>
+            <MaterialSwitch
+              id="remote-client-access"
+              checked={remoteClientAccessEnabled}
+              disabled={pendingAction === "settings"}
+              onCheckedChange={updateRemoteClientAccess}
+            />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
+
+      <section className="xl:border-l xl:border-outline-variant xl:pl-8">
+        <div className="mb-5 flex items-start gap-4">
+          <div className="grid size-12 shrink-0 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-tertiary-container text-on-tertiary-container">
+            <KeyRound className="size-6" aria-hidden="true" />
+          </div>
+          <div>
+            <h2 className="md-headline-small md-emphasized text-on-surface">
+              Client tokens
+            </h2>
+            <p className="mt-1 md-body-medium text-on-surface-variant">
+              Create scoped tokens for trusted Android clients.
+            </p>
+          </div>
+        </div>
+
+        <form
+          onSubmit={createClientToken}
+          className="grid gap-3 border-b border-outline-variant pb-5 sm:grid-cols-[1fr_auto] sm:items-end"
+        >
+          <MaterialTextField
+            label="Token name"
+            value={clientTokenName}
+            onChange={(event) => setClientTokenName(event.target.value)}
+            placeholder="Android client"
+          />
+
+          <MaterialButton
+            type="submit"
+            size="lg"
+            disabled={pendingAction === "create"}
+            className="w-full sm:w-auto"
+          >
+            <KeyRound className="size-5" aria-hidden="true" />
+            {pendingAction === "create" ? "Creating..." : "Create token"}
+          </MaterialButton>
+        </form>
+
+        <div className="mt-5 space-y-4">
+          {newClientToken ? (
+            <MaterialAlert title="Copy this token now" variant="warning">
+              <p>It will not be shown again.</p>
+              <code className="mt-3 block break-all rounded-[var(--md-sys-shape-corner-medium)] bg-surface px-3 py-2 font-mono text-xs text-on-surface ring-1 ring-outline-variant">
+                {newClientToken}
+              </code>
+            </MaterialAlert>
+          ) : null}
+
+          {message ? (
+            <MaterialAlert variant={isErrorMessage(message) ? "error" : "info"}>
+              {message}
+            </MaterialAlert>
+          ) : null}
+        </div>
+
+        <div className="mt-6">
+          <div className="grid gap-1 border-b border-outline-variant pb-4 sm:grid-cols-[1fr_auto] sm:items-end">
+            <div>
+              <h3 className="md-title-large md-emphasized text-on-surface">
+                Active tokens
+              </h3>
+              <p className="mt-1 md-body-medium text-on-surface-variant">
+                Revoke tokens that no longer match a trusted device.
+              </p>
+            </div>
+            <p className="md-label-large tabular-nums text-on-surface-variant">
+              {clientTokens.length} total
+            </p>
+          </div>
+
+          {clientTokens.length === 0 ? (
+            <div className="py-12 text-center">
+              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container">
+                <ShieldCheck className="size-6" aria-hidden="true" />
+              </div>
+              <h4 className="md-title-large md-emphasized text-on-surface">
+                No client tokens
+              </h4>
+              <p className="mx-auto mt-2 max-w-md md-body-medium text-on-surface-variant">
+                Create a token when a trusted device is ready to connect.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-outline-variant">
+              {clientTokens.map((token) => {
+                const isRevoking = pendingAction === `delete:${token.id}`;
+
+                return (
+                  <div
+                    key={token.id}
+                    className="grid gap-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h4 className="truncate md-title-small md-emphasized text-on-surface">
+                          {token.name}
+                        </h4>
+                        {token.lastUsedAt ? (
+                          <MaterialBadge variant="success">Active</MaterialBadge>
+                        ) : (
+                          <MaterialBadge variant="secondary">Unused</MaterialBadge>
+                        )}
+                      </div>
+                      <p className="mt-1 md-body-medium text-on-surface-variant">
+                        {formatTokenMeta(token)}
+                      </p>
+                    </div>
+
+                    <MaterialButton
+                      variant="danger"
+                      size="sm"
+                      onClick={() => revokeClientToken(token.id)}
+                      disabled={isRevoking}
+                    >
+                      <Trash2 className="size-4" aria-hidden="true" />
+                      {isRevoking ? "Revoking..." : "Revoke"}
+                    </MaterialButton>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
@@ -301,4 +288,13 @@ function formatTokenMeta(token: RelayClientToken) {
   }
 
   return parts.join(" · ");
+}
+
+function isErrorMessage(message: string) {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes("failed") ||
+    normalized.includes("error") ||
+    normalized.includes("invalid")
+  );
 }

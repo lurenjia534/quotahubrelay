@@ -1,8 +1,4 @@
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { MaterialAvatar } from "@/app/components/material/primitives";
 
 type UserSummaryProps = {
   email: string;
@@ -12,16 +8,13 @@ type UserSummaryProps = {
 
 export function UserSummary({ email, image, name }: UserSummaryProps) {
   return (
-    <div className="flex items-center gap-3">
-      <Avatar size="lg">
-        <AvatarImage src={image ?? undefined} alt="" />
-        <AvatarFallback>{name.slice(0, 1).toUpperCase()}</AvatarFallback>
-      </Avatar>
+    <div className="flex items-center gap-4 rounded-[var(--md-sys-shape-corner-extra-large)] bg-surface-container px-4 py-3">
+      <MaterialAvatar image={image} name={name} size="lg" />
       <div className="min-w-0">
-        <p className="truncate text-sm font-medium text-foreground">
+        <p className="truncate md-title-small md-emphasized text-on-surface">
           {name}
         </p>
-        <p className="truncate text-xs text-muted-foreground">{email}</p>
+        <p className="truncate md-body-small text-on-surface-variant">{email}</p>
       </div>
     </div>
   );

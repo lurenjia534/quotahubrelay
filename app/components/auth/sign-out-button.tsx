@@ -2,7 +2,8 @@
 
 import { useTransition } from "react";
 import { signOut } from "@/app/actions/auth";
-import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+import { MaterialButton } from "@/app/components/material/primitives";
 import { cn } from "@/lib/utils";
 
 type SignOutButtonProps = {
@@ -13,8 +14,8 @@ export function SignOutButton({ className }: SignOutButtonProps) {
   const [isPending, startTransition] = useTransition();
 
   return (
-    <Button
-      variant="outline"
+    <MaterialButton
+      variant="outlined"
       disabled={isPending}
       onClick={() => {
         startTransition(async () => {
@@ -24,7 +25,8 @@ export function SignOutButton({ className }: SignOutButtonProps) {
       }}
       className={cn("w-full", className)}
     >
+      <LogOut className="size-4" aria-hidden="true" />
       {isPending ? "Signing out..." : "Sign out"}
-    </Button>
+    </MaterialButton>
   );
 }

@@ -1,41 +1,27 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { Check, Plus, RefreshCw, Trash2 } from "lucide-react";
+import {
+  Check,
+  Database,
+  Layers3,
+  Plus,
+  RefreshCw,
+  Trash2,
+} from "lucide-react";
 import {
   ProviderDescriptor,
   QuotaResource,
   QuotaSubscription,
   QuotaWindow,
 } from "@/app/lib/quota/types";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemGroup,
-  ItemTitle,
-} from "@/components/ui/item";
-import {
-  Progress,
-  ProgressLabel,
-} from "@/components/ui/progress";
+  MaterialAlert,
+  MaterialBadge,
+  MaterialButton,
+  MaterialLinearProgressIndicator,
+  MaterialTextField,
+} from "@/app/components/material/primitives";
 import { cn } from "@/lib/utils";
 
 type SubscriptionManagerProps = {
@@ -137,32 +123,48 @@ export function SubscriptionManager({
   return (
     <div className="space-y-6">
       {message ? (
-        <Alert>
-          <AlertDescription>{message}</AlertDescription>
-        </Alert>
+        <MaterialAlert
+          variant={message.toLowerCase().includes("failed") ? "error" : "success"}
+        >
+          {message}
+        </MaterialAlert>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Server subscriptions</CardTitle>
-          <CardDescription>
-            {subscriptions.length} connected provider
-            {subscriptions.length === 1 ? "" : "s"} with server-side quota
-            snapshots.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ItemGroup className="gap-0 divide-y rounded-lg border">
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <section className="min-w-0">
+          <div className="grid gap-4 border-b border-outline-variant pb-5 sm:grid-cols-[1fr_auto] sm:items-end">
+            <div className="flex min-w-0 gap-4">
+              <div className="grid size-12 shrink-0 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-primary-container text-on-primary-container">
+                <Database className="size-6" aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="md-headline-small md-emphasized text-on-surface">
+                  Server subscriptions
+                </h2>
+                <p className="mt-1 md-body-medium text-on-surface-variant">
+                  {subscriptions.length} connected provider
+                  {subscriptions.length === 1 ? "" : "s"} with quota snapshots.
+                </p>
+              </div>
+            </div>
+            <MaterialBadge variant="primary">
+              {subscriptions.length} total
+            </MaterialBadge>
+          </div>
+
+          <div className="divide-y divide-outline-variant">
             {subscriptions.length === 0 ? (
-              <Item className="rounded-none border-0 px-4 py-10" role="listitem">
-                <ItemContent>
-                  <ItemTitle>No subscriptions connected</ItemTitle>
-                  <ItemDescription>
-                    Add a provider below to start collecting quota snapshots for
-                    remote clients.
-                  </ItemDescription>
-                </ItemContent>
-              </Item>
+              <div className="py-14 text-center">
+                <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container">
+                  <Layers3 className="size-6" aria-hidden="true" />
+                </div>
+                <h3 className="md-title-large md-emphasized text-on-surface">
+                  No subscriptions connected
+                </h3>
+                <p className="mx-auto mt-2 max-w-md md-body-medium text-on-surface-variant">
+                  Add a provider to collect quota snapshots for remote clients.
+                </p>
+              </div>
             ) : (
               subscriptions.map((subscription) => (
                 <SubscriptionItem
@@ -174,29 +176,34 @@ export function SubscriptionManager({
                 />
               ))
             )}
-          </ItemGroup>
-        </CardContent>
-      </Card>
+          </div>
+        </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Connect a provider</CardTitle>
-          <CardDescription>
-            Pick a provider, then enter the credentials needed to fetch quota
-            snapshots. Secrets stay encrypted on this server.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-3">
-            <div className="flex items-baseline justify-between">
-              <p className="text-sm font-medium text-foreground">
-                1. Choose provider
+        <aside className="xl:sticky xl:top-28 xl:self-start xl:border-l xl:border-outline-variant xl:pl-8">
+          <div className="mb-5 flex items-start gap-4">
+            <div className="grid size-12 shrink-0 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-tertiary-container text-on-tertiary-container">
+              <Plus className="size-6" aria-hidden="true" />
+            </div>
+            <div>
+              <h2 className="md-headline-small md-emphasized text-on-surface">
+                Connect provider
+              </h2>
+              <p className="mt-1 md-body-medium text-on-surface-variant">
+                Credentials stay encrypted on this server.
               </p>
-              <p className="text-xs text-muted-foreground">
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-baseline justify-between gap-4">
+              <p className="md-label-large md-emphasized text-on-surface">
+                Provider
+              </p>
+              <p className="md-label-medium text-on-surface-variant">
                 {providers.length} available
               </p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="overflow-hidden rounded-[var(--md-sys-shape-corner-extra-large)] bg-surface-container-low">
               {providers.map((provider) => {
                 const isSelected = provider.id === selectedProviderId;
                 const requiredCount = provider.credentialFields.filter(
@@ -213,39 +220,36 @@ export function SubscriptionManager({
                     }}
                     aria-pressed={isSelected}
                     className={cn(
-                      "group relative flex items-center gap-3 rounded-lg border bg-card p-3 text-left transition-all",
-                      "hover:border-foreground/30 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      "md-state-layer flex min-h-16 w-full items-center gap-3 border-b border-outline-variant px-3 text-left last:border-b-0",
+                      "transition-colors duration-300 ease-[var(--md-sys-motion-easing-standard)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/25",
                       isSelected
-                        ? "border-foreground ring-2 ring-foreground/10"
-                        : "border-border",
+                        ? "bg-primary-container text-on-primary-container"
+                        : "text-on-surface",
                     )}
                   >
                     <span
                       className={cn(
-                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-sm font-semibold",
+                        "grid size-11 shrink-0 place-items-center rounded-full md-label-large md-emphasized",
                         isSelected
-                          ? "bg-foreground text-background"
-                          : "bg-muted text-foreground/70 group-hover:bg-muted/80",
+                          ? "bg-primary text-on-primary"
+                          : "bg-surface text-on-surface-variant",
                       )}
                       aria-hidden="true"
                     >
                       {providerInitials(provider.displayName)}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium text-foreground">
+                      <span className="block truncate md-title-small md-emphasized">
                         {provider.displayName}
                       </span>
-                      <span className="block text-xs text-muted-foreground">
+                      <span className="block md-body-small opacity-80">
                         {requiredCount === 0
                           ? "No credentials required"
                           : `${requiredCount} credential${requiredCount === 1 ? "" : "s"} required`}
                       </span>
                     </span>
                     {isSelected ? (
-                      <Check
-                        className="h-4 w-4 shrink-0 text-foreground"
-                        aria-hidden="true"
-                      />
+                      <Check className="size-5 shrink-0" aria-hidden="true" />
                     ) : null}
                   </button>
                 );
@@ -254,67 +258,49 @@ export function SubscriptionManager({
           </div>
 
           {selectedProvider ? (
-            <form onSubmit={createSubscription} className="space-y-4">
-              <div className="flex items-baseline justify-between">
-                <p className="text-sm font-medium text-foreground">
-                  2. Configure {selectedProvider.displayName}
-                </p>
-              </div>
-              <FieldGroup className="grid gap-4 md:grid-cols-2">
-                <Field>
-                  <FieldLabel htmlFor="subscription-title">
-                    Display name
-                  </FieldLabel>
-                  <Input
-                    id="subscription-title"
-                    value={customTitle}
-                    onChange={(event) => setCustomTitle(event.target.value)}
-                    placeholder={selectedProvider.displayName}
-                  />
-                </Field>
+            <form onSubmit={createSubscription} className="mt-6 space-y-4">
+              <MaterialTextField
+                label="Display name"
+                value={customTitle}
+                onChange={(event) => setCustomTitle(event.target.value)}
+                placeholder={selectedProvider.displayName}
+              />
 
-                {selectedProvider.credentialFields.map((field) => (
-                  <Field key={field.key}>
-                    <FieldLabel htmlFor={`credential-${field.key}`}>
-                      {field.label}
-                    </FieldLabel>
-                    <Input
-                      id={`credential-${field.key}`}
-                      type={field.isSecret ? "password" : "text"}
-                      required={field.isRequired}
-                      value={credentialValues[field.key] ?? ""}
-                      onChange={(event) =>
-                        setCredentialValues((current) => ({
-                          ...current,
-                          [field.key]: event.target.value,
-                        }))
-                      }
-                    />
-                  </Field>
-                ))}
+              {selectedProvider.credentialFields.map((field) => (
+                <MaterialTextField
+                  key={field.key}
+                  label={field.label}
+                  type={field.isSecret ? "password" : "text"}
+                  required={field.isRequired}
+                  value={credentialValues[field.key] ?? ""}
+                  onChange={(event) =>
+                    setCredentialValues((current) => ({
+                      ...current,
+                      [field.key]: event.target.value,
+                    }))
+                  }
+                />
+              ))}
 
-                <div className="flex justify-end md:col-span-2">
-                  <Button
-                    type="submit"
-                    disabled={pendingAction === "create"}
-                  >
-                    <Plus className="h-4 w-4" aria-hidden="true" />
-                    {pendingAction === "create"
-                      ? "Connecting..."
-                      : "Connect provider"}
-                  </Button>
-                </div>
-              </FieldGroup>
+              <MaterialButton
+                type="submit"
+                size="lg"
+                className="w-full"
+                disabled={pendingAction === "create"}
+              >
+                <Plus className="size-5" aria-hidden="true" />
+                {pendingAction === "create" ? "Connecting..." : "Connect provider"}
+              </MaterialButton>
             </form>
           ) : (
-            <div className="rounded-lg border border-dashed bg-muted/30 px-4 py-8 text-center">
-              <p className="text-sm text-muted-foreground">
-                Select a provider above to enter credentials.
+            <div className="mt-6 border-t border-outline-variant py-6 text-center">
+              <p className="md-body-medium text-on-surface-variant">
+                Select a provider to enter credentials.
               </p>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </aside>
+      </div>
     </div>
   );
 }
@@ -333,77 +319,75 @@ function SubscriptionItem({
   const resources = subscription.snapshot?.resources ?? [];
 
   return (
-    <Item
-      className="block rounded-none border-0 px-4 py-5"
-      role="listitem"
-    >
-      <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-        <ItemContent className="min-w-0">
-          <ItemTitle className="max-w-full">
-            <span className="truncate">{subscription.displayTitle}</span>
+    <article className="py-6">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="min-w-0 truncate md-title-large md-emphasized text-on-surface">
+              {subscription.displayTitle}
+            </h3>
             <StatusBadge state={subscription.syncState} />
-          </ItemTitle>
-          <ItemDescription>
+          </div>
+          <p className="mt-1 md-body-medium text-on-surface-variant">
             {subscription.providerDisplayName}
             {subscription.lastSyncedAt
               ? ` · synced ${formatDateTime(subscription.lastSyncedAt)}`
               : ""}
-          </ItemDescription>
-        </ItemContent>
+          </p>
+        </div>
 
-        <ItemActions className="justify-start sm:justify-end">
-          <Button
-            variant="outline"
+        <div className="flex flex-wrap gap-2">
+          <MaterialButton
+            variant="outlined"
             size="sm"
             onClick={() => onRefresh(subscription.id)}
             disabled={pendingAction === `refresh:${subscription.id}`}
           >
-            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+            <RefreshCw className="size-4" aria-hidden="true" />
             {pendingAction === `refresh:${subscription.id}` ? "Refreshing" : "Refresh"}
-          </Button>
-          <Button
-            variant="destructive"
+          </MaterialButton>
+          <MaterialButton
+            variant="danger"
             size="sm"
             onClick={() => onDelete(subscription.id)}
             disabled={pendingAction === `delete:${subscription.id}`}
           >
-            <Trash2 className="h-4 w-4" aria-hidden="true" />
+            <Trash2 className="size-4" aria-hidden="true" />
             {pendingAction === `delete:${subscription.id}` ? "Deleting" : "Delete"}
-          </Button>
-        </ItemActions>
+          </MaterialButton>
+        </div>
       </div>
 
       {resources.length > 0 ? (
-        <ItemGroup className="mt-5 gap-0 divide-y border-t">
+        <div className="mt-5 divide-y divide-outline-variant overflow-hidden rounded-[var(--md-sys-shape-corner-extra-large)] bg-surface-container-low">
           {resources.map((resource) => (
             <ResourceUsage key={resource.key} resource={resource} />
           ))}
-        </ItemGroup>
+        </div>
       ) : (
-        <p className="mt-5 border-t pt-5 text-sm text-muted-foreground">
+        <p className="mt-5 border-l-4 border-outline-variant bg-surface-container-low px-4 py-3 md-body-medium text-on-surface-variant">
           No quota snapshot is available yet. Refresh this subscription to fetch
           the latest provider state.
         </p>
       )}
-    </Item>
+    </article>
   );
 }
 
 function ResourceUsage({ resource }: { resource: QuotaResource }) {
   return (
-    <Item
-      className="grid rounded-none border-0 px-0 py-3 lg:grid-cols-[minmax(180px,240px)_1fr] lg:items-start"
-      role="listitem"
-    >
-      <ItemContent className="min-w-0">
-        <ItemTitle>{resource.title}</ItemTitle>
-        <ItemDescription>
+    <div className="grid gap-4 px-4 py-4 lg:grid-cols-[minmax(160px,240px)_1fr]">
+      <div className="min-w-0">
+        <h4 className="truncate md-title-small md-emphasized text-on-surface">
+          {resource.title}
+        </h4>
+        <p className="mt-1 md-body-small text-on-surface-variant">
           {resource.type}
           {resource.role ? ` · ${resource.role.toLowerCase()}` : ""}
-        </ItemDescription>
-      </ItemContent>
+        </p>
+      </div>
 
-      <div className="w-full space-y-3">
+      <div className="space-y-4">
         {resource.windows.map((window) => (
           <QuotaWindowUsage
             key={`${resource.key}:${window.windowKey}`}
@@ -411,50 +395,61 @@ function ResourceUsage({ resource }: { resource: QuotaResource }) {
           />
         ))}
       </div>
-    </Item>
+    </div>
   );
 }
 
 function QuotaWindowUsage({ window }: { window: QuotaWindow }) {
   const usage = quotaUsage(window);
+  const percent = usage?.percent ?? 0;
 
   return (
-    <Progress value={usage?.percent ?? 0}>
-      <ProgressLabel>
-        <span className="block truncate text-sm font-normal text-foreground">
-          {window.label ?? window.scope}
-        </span>
-        <span className="block text-xs font-normal text-muted-foreground">
-          {window.resetAtEpochMillis
-            ? `Resets ${formatDateTime(window.resetAtEpochMillis)}`
-            : "No reset window reported"}
-        </span>
-      </ProgressLabel>
-      <p className="ml-auto text-sm font-medium text-foreground">
-        {usage
-          ? `${formatQuantity(usage.used, window.unit)} / ${formatQuantity(
-              usage.total,
-              window.unit,
-            )}`
-          : formatOpenUsage(window)}
-      </p>
+    <div>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate md-label-large md-emphasized text-on-surface">
+            {window.label ?? window.scope}
+          </p>
+          <p className="mt-1 md-body-small text-on-surface-variant">
+            {window.resetAtEpochMillis
+              ? `Resets ${formatDateTime(window.resetAtEpochMillis)}`
+              : "No reset window reported"}
+          </p>
+        </div>
+        <p className="md-label-large md-emphasized text-on-surface">
+          {usage
+            ? `${formatQuantity(usage.used, window.unit)} / ${formatQuantity(
+                usage.total,
+                window.unit,
+              )}`
+            : formatOpenUsage(window)}
+        </p>
+      </div>
+
+      <MaterialLinearProgressIndicator
+        className="mt-3"
+        label={window.label ?? window.scope}
+        value={percent}
+        variant={progressVariant(percent)}
+      />
+
       {usage ? (
-        <p className="basis-full text-xs text-muted-foreground">
+        <p className="mt-1 md-body-small text-on-surface-variant">
           {formatQuantity(usage.remaining, window.unit)} remaining
         </p>
       ) : null}
-    </Progress>
+    </div>
   );
 }
 
 function StatusBadge({ state }: { state: QuotaSubscription["syncState"] }) {
+  const variant =
+    state === "active" ? "success" : state === "pending" ? "outline" : "error";
+
   return (
-    <Badge
-      variant="outline"
-      className={cn("capitalize", statusClassName(state))}
-    >
+    <MaterialBadge variant={variant} className="capitalize">
       {state.replace("_", " ")}
-    </Badge>
+    </MaterialBadge>
   );
 }
 
@@ -501,16 +496,10 @@ function formatDateTime(value: number) {
   return new Date(value).toLocaleString();
 }
 
-function statusClassName(state: QuotaSubscription["syncState"]) {
-  if (state === "active") {
-    return "border-emerald-200 text-emerald-700";
-  }
-
-  if (state === "pending") {
-    return "text-muted-foreground";
-  }
-
-  return "border-destructive/30 text-destructive";
+function progressVariant(percent: number) {
+  if (percent >= 90) return "error";
+  if (percent >= 70) return "tertiary";
+  return "primary";
 }
 
 function clamp(value: number, min: number, max: number) {

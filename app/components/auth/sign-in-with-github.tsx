@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { authClient } from "@/app/lib/auth-client";
 import { GithubIcon } from "@/app/components/auth/github-icon";
-import { Button } from "@/components/ui/button";
+import { MaterialButton } from "@/app/components/material/primitives";
 
 type SignInWithGithubProps = {
   disabled?: boolean;
@@ -13,8 +13,9 @@ export function SignInWithGithub({ disabled }: SignInWithGithubProps) {
   const [isPending, setIsPending] = useState(false);
 
   return (
-    <Button
-      variant="outline"
+    <MaterialButton
+      variant="filled"
+      size="lg"
       className="w-full"
       disabled={disabled || isPending}
       onClick={async () => {
@@ -31,6 +32,6 @@ export function SignInWithGithub({ disabled }: SignInWithGithubProps) {
     >
       <GithubIcon />
       {isPending ? "Opening GitHub..." : "Continue with GitHub"}
-    </Button>
+    </MaterialButton>
   );
 }
