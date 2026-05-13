@@ -1,0 +1,178 @@
+"use client";
+
+import { useSyncExternalStore } from "react";
+import { Check, Palette } from "lucide-react";
+import {
+  isMaterialThemeId,
+  materialThemeChangeEvent,
+  materialThemePresets,
+  materialThemeStorageKey,
+  type MaterialThemeId,
+} from "@/app/components/material/theme-colors";
+import { applyMaterialTheme } from "@/app/components/material/theme-provider";
+import { cn } from "@/lib/utils";
+
+export function ThemeColorSettings() {
+  const selectedThemeId = useSyncExternalStore(
+    subscribeToTheme,
+    getThemeSnapshot,
+    getServerThemeSnapshot,
+  );
+
+  function selectTheme(themeId: MaterialThemeId) {
+    applyMaterialTheme(themeId);
+  }
+
+  const selectedTheme =
+    materialThemePresets.find((theme) => theme.id === selectedThemeId) ??
+    materialThemePresets[0];
+
+  return (
+    <section>
+      <div className="mb-5 flex min-w-0 gap-4">
+        <div className="grid size-12 shrink-0 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-primary-container text-on-primary-container">
+          <Palette className="size-6" aria-hidden="true" />
+        </div>
+        <div className="min-w-0">
+          <h2 className="md-headline-small md-emphasized text-on-surface">
+            Dynamic color
+          </h2>
+          <p className="mt-1 max-w-2xl md-body-medium text-on-surface-variant">
+            Choose a prepared Material color scheme. Each option updates primary,
+            secondary, tertiary, surface, container, and outline roles together.
+          </p>
+        </div>
+      </div>
+
+      <div className="grid gap-6 border-y border-outline-variant py-5 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="divide-y divide-outline-variant overflow-hidden rounded-[var(--md-sys-shape-corner-extra-large)] bg-surface-container-low">
+          {materialThemePresets.map((theme) => {
+            const isSelected = theme.id === selectedThemeId;
+
+            return (
+              <button
+                key={theme.id}
+                type="button"
+                aria-pressed={isSelected}
+                onClick={() => selectTheme(theme.id)}
+                className={cn(
+                  "md-state-layer grid w-full gap-4 px-4 py-4 text-left transition-colors sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center",
+                  isSelected
+                    ? "bg-primary-container text-on-primary-container"
+                    : "text-on-surface",
+                )}
+              >
+                <span className="min-w-0">
+                  <span className="block md-title-small md-emphasized">
+                    {theme.name}
+                  </span>
+                  <span className="mt-1 block md-body-small opacity-80">
+                    {theme.description}
+                  </span>
+                </span>
+
+                <span className="flex items-center gap-3">
+                  <RoleSwatches roles={theme.roles} />
+                  {isSelected ? (
+                    <span className="grid size-9 place-items-center rounded-full bg-primary text-on-primary">
+                      <Check className="size-5" aria-hidden="true" />
+                    </span>
+                  ) : null}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="min-w-0">
+          <p className="mb-3 md-label-large md-emphasized text-on-surface">
+            Role preview
+          </p>
+          <div className="overflow-hidden rounded-[var(--md-sys-shape-corner-extra-large)] bg-surface-container-low">
+            <div
+              className="h-20"
+              style={{
+                background: selectedTheme.roles.primary,
+              }}
+            />
+            <div className="grid grid-cols-3">
+              <RoleBlock label="Primary" value={selectedTheme.roles.primary} />
+              <RoleBlock
+                label="Secondary"
+                value={selectedTheme.roles.secondary}
+              />
+              <RoleBlock label="Tertiary" value={selectedTheme.roles.tertiary} />
+            </div>
+          </div>
+          <p className="mt-3 md-body-small text-on-surface-variant">
+            Seed {selectedTheme.seed}. Containers and surface tint are mapped in
+            CSS variables for the whole app.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function subscribeToTheme(onStoreChange: () => void) {
+  window.addEventListener(materialThemeChangeEvent, onStoreChange);
+  window.addEventListener("storage", onStoreChange);
+
+  return () => {
+    window.removeEventListener(materialThemeChangeEvent, onStoreChange);
+    window.removeEventListener("storage", onStoreChange);
+  };
+}
+
+function getThemeSnapshot(): MaterialThemeId {
+  const activeTheme = document.documentElement.dataset.materialTheme;
+  if (activeTheme && isMaterialThemeId(activeTheme)) {
+    return activeTheme;
+  }
+
+  const stored = window.localStorage.getItem(materialThemeStorageKey);
+  return stored && isMaterialThemeId(stored) ? stored : "relay";
+}
+
+function getServerThemeSnapshot(): MaterialThemeId {
+  return "relay";
+}
+
+function RoleSwatches({
+  roles,
+}: {
+  roles: {
+    primary: string;
+    secondary: string;
+    tertiary: string;
+  };
+}) {
+  return (
+    <span className="flex -space-x-2">
+      <span
+        className="size-8 rounded-full ring-2 ring-surface-container-low"
+        style={{ background: roles.primary }}
+      />
+      <span
+        className="size-8 rounded-full ring-2 ring-surface-container-low"
+        style={{ background: roles.secondary }}
+      />
+      <span
+        className="size-8 rounded-full ring-2 ring-surface-container-low"
+        style={{ background: roles.tertiary }}
+      />
+    </span>
+  );
+}
+
+function RoleBlock({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border-r border-outline-variant px-3 py-3 last:border-r-0">
+      <span
+        className="mb-2 block h-8 rounded-full"
+        style={{ background: value }}
+      />
+      <p className="md-label-medium text-on-surface-variant">{label}</p>
+    </div>
+  );
+}

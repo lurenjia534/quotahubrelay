@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { Activity, KeyRound, RadioTower } from "lucide-react";
+import { Activity, KeyRound, RadioTower, Route } from "lucide-react";
 import { auth, isAuthConfigured, isAuthorizedUser } from "@/app/lib/auth";
 import { AuthPanel } from "@/app/components/auth/auth-panel";
 
@@ -30,84 +30,150 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     : user && !isAuthorized
       ? errorMessages.access_denied
       : error
-    ? (errorMessages[error] ?? "Unable to sign in. Please try again.")
-    : null;
+        ? (errorMessages[error] ?? "Unable to sign in. Please try again.")
+        : null;
 
   if (user && isAuthorized) {
     redirect("/dashboard");
   }
 
   return (
-    <main className="min-h-svh flex-1 bg-background">
-      <div className="grid min-h-svh lg:grid-cols-[minmax(0,1fr)_480px]">
-        <section className="relative overflow-hidden px-6 py-8 sm:px-10 lg:px-14">
-          <div className="absolute inset-x-0 top-0 h-2 bg-[linear-gradient(90deg,var(--md-sys-color-primary),var(--md-sys-color-secondary),var(--md-sys-color-tertiary))]" />
-          <div className="relative flex min-h-full flex-col justify-between gap-12">
-            <div className="expressive-enter flex items-center gap-3">
-              <span className="grid size-14 place-items-center rounded-[var(--md-sys-shape-corner-large-increased)] bg-primary text-xl font-bold text-on-primary shadow-lg shadow-primary/20">
+    <main className="min-h-svh flex-1 bg-surface text-on-surface">
+      <div className="grid min-h-svh lg:grid-cols-[minmax(0,1fr)_440px] xl:grid-cols-[minmax(0,1fr)_480px]">
+        <section className="relative flex min-h-[68svh] flex-col overflow-hidden bg-background px-6 py-6 sm:px-10 lg:min-h-svh lg:px-14">
+          <div className="absolute inset-x-0 top-0 h-2 bg-[linear-gradient(90deg,var(--md-sys-color-primary)_0_42%,var(--md-sys-color-secondary)_42%_72%,var(--md-sys-color-tertiary)_72%_100%)]" />
+
+          <header className="expressive-enter flex items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <span className="grid size-16 place-items-center rounded-[var(--md-sys-shape-corner-large-increased)] bg-primary text-2xl font-bold text-on-primary">
                 Q
               </span>
               <div>
-                <p className="md-title-large md-emphasized text-on-surface">
-                  QuotaHub Relay
-                </p>
+                <p className="md-title-large md-emphasized">QuotaHub Relay</p>
                 <p className="md-body-medium text-on-surface-variant">
-                  Server-side quota snapshots
+                  Server quota relay
                 </p>
               </div>
             </div>
+            <span className="hidden rounded-full bg-secondary-container px-4 py-2 md-label-large md-emphasized text-on-secondary-container sm:inline-flex">
+              Private console
+            </span>
+          </header>
 
-            <div className="expressive-enter grid max-w-5xl gap-10 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-end">
-              <div>
-                <p className="mb-4 inline-flex rounded-full bg-tertiary-container px-4 py-2 md-label-large md-emphasized text-on-tertiary-container">
-                  Private relay console
-                </p>
-                <h1 className="md-display-large text-on-surface">
-                  Normalize provider quotas before clients ask.
-                </h1>
-                <p className="mt-6 max-w-xl md-body-large text-on-surface-variant">
-                  Connect approved provider credentials on the server, then expose
-                  controlled quota state to trusted clients.
-                </p>
-              </div>
-              <QuotaFlowVisual />
+          <div className="grid flex-1 items-center gap-10 py-12 xl:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.75fr)]">
+            <div className="expressive-enter max-w-3xl">
+              <p className="mb-5 inline-flex rounded-full bg-tertiary-container px-4 py-2 md-label-large md-emphasized text-on-tertiary-container">
+                Quotas normalized at the relay
+              </p>
+              <h1 className="md-display-medium max-w-4xl text-on-surface lg:md-display-large">
+                One server view before every client request.
+              </h1>
+              <p className="mt-6 max-w-2xl md-body-large text-on-surface-variant">
+                Provider credentials stay server-side. Clients receive only the
+                quota state they are allowed to read.
+              </p>
             </div>
 
-            <div className="expressive-enter-delayed grid max-w-3xl divide-y divide-outline-variant overflow-hidden rounded-[var(--md-sys-shape-corner-extra-large)] bg-surface-container-low sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-              <SignalTile
-                icon={<RadioTower className="size-5" aria-hidden="true" />}
-                label="Relay"
-                value="Server held"
-              />
-              <SignalTile
-                icon={<Activity className="size-5" aria-hidden="true" />}
-                label="Snapshots"
-                value="Normalized"
-              />
-              <SignalTile
-                icon={<KeyRound className="size-5" aria-hidden="true" />}
-                label="Clients"
-                value="Token scoped"
-              />
-            </div>
+            <RelayMap />
+          </div>
+
+          <div className="expressive-enter-delayed grid divide-y divide-outline-variant overflow-hidden border-y border-outline-variant sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+            <SignalCell
+              icon={<RadioTower className="size-5" aria-hidden="true" />}
+              label="Relay"
+              value="Server held"
+            />
+            <SignalCell
+              icon={<Activity className="size-5" aria-hidden="true" />}
+              label="Snapshots"
+              value="Normalized"
+            />
+            <SignalCell
+              icon={<KeyRound className="size-5" aria-hidden="true" />}
+              label="Clients"
+              value="Token scoped"
+            />
           </div>
         </section>
 
-        <aside className="flex items-center bg-surface-container px-6 py-8 sm:px-10 lg:px-12">
-          <div className="w-full">
-            <AuthPanel
-              errorMessage={errorMessage}
-              isConfigured={isConfigured}
-              user={user}
-            />
-          </div>
+        <aside className="flex items-center border-t border-outline-variant bg-surface-container px-6 py-8 sm:px-10 lg:border-l lg:border-t-0 lg:px-10 xl:px-12">
+          <AuthPanel
+            errorMessage={errorMessage}
+            isConfigured={isConfigured}
+            user={user}
+          />
         </aside>
       </div>
     </main>
   );
 }
 
-function SignalTile({
+function RelayMap() {
+  const rows = [
+    {
+      label: "OpenAI Codex",
+      value: "64%",
+      width: "64%",
+      tone: "bg-primary",
+    },
+    {
+      label: "Kimi Coding",
+      value: "42%",
+      width: "42%",
+      tone: "bg-secondary",
+    },
+    {
+      label: "MiniMax Plan",
+      value: "78%",
+      width: "78%",
+      tone: "bg-tertiary",
+    },
+  ];
+
+  return (
+    <div className="expressive-enter-delayed hidden xl:block">
+      <div className="relative min-h-[420px]">
+        <div className="absolute left-0 top-5 h-[22rem] w-28 rounded-full bg-primary-container" />
+        <div className="absolute left-[4.5rem] top-20 h-72 w-28 rounded-full bg-secondary-container" />
+        <div className="absolute left-36 top-36 h-56 w-28 rounded-full bg-tertiary-container" />
+
+        <div className="absolute bottom-0 left-14 right-0 overflow-hidden rounded-[var(--md-sys-shape-corner-extra-extra-large)] bg-surface-container-low">
+          <div className="flex items-center gap-3 border-b border-outline-variant px-5 py-4">
+            <span className="grid size-11 place-items-center rounded-full bg-primary text-on-primary">
+              <Route className="size-5" aria-hidden="true" />
+            </span>
+            <div>
+              <p className="md-title-small md-emphasized">Relay snapshot</p>
+              <p className="md-body-small text-on-surface-variant">
+                Provider signals, reduced to client-safe state.
+              </p>
+            </div>
+          </div>
+          <div className="divide-y divide-outline-variant">
+            {rows.map((row) => (
+              <div key={row.label} className="px-5 py-4">
+                <div className="mb-2 flex items-center justify-between gap-4">
+                  <p className="md-label-large md-emphasized">{row.label}</p>
+                  <p className="md-label-large text-on-surface-variant">
+                    {row.value}
+                  </p>
+                </div>
+                <div className="h-1 overflow-hidden rounded-full bg-surface-container-highest">
+                  <div
+                    className={`h-full rounded-full ${row.tone}`}
+                    style={{ width: row.width }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SignalCell({
   icon,
   label,
   value,
@@ -117,35 +183,16 @@ function SignalTile({
   value: string;
 }) {
   return (
-    <div className="px-4 py-4">
-      <div className="mb-5 flex size-11 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container">
+    <div className="flex items-center gap-4 px-4 py-4">
+      <span className="grid size-11 shrink-0 place-items-center rounded-full bg-secondary-container text-on-secondary-container">
         {icon}
-      </div>
-      <p className="md-label-large md-emphasized text-on-surface">{label}</p>
-      <p className="mt-1 md-body-medium text-on-surface-variant">{value}</p>
-    </div>
-  );
-}
-
-function QuotaFlowVisual() {
-  return (
-    <div className="hidden xl:block">
-      <div className="relative h-80">
-        <div className="absolute left-6 top-0 h-72 w-20 rounded-full bg-primary-container" />
-        <div className="absolute left-28 top-10 h-60 w-20 rounded-full bg-secondary-container" />
-        <div className="absolute left-[200px] top-20 h-48 w-20 rounded-full bg-tertiary-container" />
-        <div className="absolute bottom-4 left-0 right-0 rounded-[var(--md-sys-shape-corner-extra-extra-large)] bg-surface-container-low px-5 py-4">
-          <div className="flex items-end gap-3">
-            <span className="h-16 w-6 rounded-full bg-primary" />
-            <span className="h-24 w-6 rounded-full bg-secondary" />
-            <span className="h-12 w-6 rounded-full bg-tertiary" />
-            <span className="h-20 w-6 rounded-full bg-primary-container" />
-          </div>
-          <p className="mt-4 md-label-large text-on-surface-variant">
-            Provider signals converge into one relay state.
-          </p>
-        </div>
-      </div>
+      </span>
+      <span className="min-w-0">
+        <span className="block md-label-large md-emphasized">{label}</span>
+        <span className="block md-body-small text-on-surface-variant">
+          {value}
+        </span>
+      </span>
     </div>
   );
 }

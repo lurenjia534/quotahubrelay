@@ -10,6 +10,7 @@ import {
   MaterialSwitch,
   MaterialTextField,
 } from "@/app/components/material/primitives";
+import { ThemeColorSettings } from "@/app/components/quota/theme-color-settings";
 
 type ClientAccessSettingsProps = {
   initialClientTokens: RelayClientToken[];
@@ -101,7 +102,10 @@ export function ClientAccessSettings({
   }
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+    <div className="space-y-10">
+      <ThemeColorSettings />
+
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
       <section>
         <div className="mb-5 flex items-start justify-between gap-4">
           <div className="flex min-w-0 gap-4">
@@ -273,6 +277,7 @@ export function ClientAccessSettings({
           )}
         </div>
       </section>
+      </div>
     </div>
   );
 }
