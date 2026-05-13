@@ -8,25 +8,32 @@ import { cn } from "@/lib/utils";
 
 type SignOutButtonProps = {
   className?: string;
+  iconOnly?: boolean;
 };
 
-export function SignOutButton({ className }: SignOutButtonProps) {
+export function SignOutButton({ className, iconOnly }: SignOutButtonProps) {
   const [isPending, startTransition] = useTransition();
 
   return (
     <MaterialButton
       variant="outlined"
       disabled={isPending}
+      iconOnly={iconOnly}
+      aria-label={iconOnly ? (isPending ? "Signing out" : "Sign out") : undefined}
       onClick={() => {
         startTransition(async () => {
           await signOut();
           window.location.href = "/";
         });
       }}
-      className={cn("w-full", className)}
+      className={cn(!iconOnly && "w-full", className)}
     >
       <LogOut className="size-4" aria-hidden="true" />
-      {isPending ? "Signing out..." : "Sign out"}
+      {iconOnly ? (
+        <span className="sr-only">{isPending ? "Signing out..." : "Sign out"}</span>
+      ) : (
+        isPending ? "Signing out..." : "Sign out"
+      )}
     </MaterialButton>
   );
 }

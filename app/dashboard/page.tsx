@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/app/components/dashboard/dashboard-shell";
 import { StatusMetrics } from "@/app/components/dashboard/status-metrics";
@@ -6,6 +7,11 @@ import { SubscriptionManager } from "@/app/components/quota/subscription-manager
 import { auth, isAuthorizedUser } from "@/app/lib/auth";
 import { providerDescriptors } from "@/app/lib/quota/providers";
 import { listSubscriptions } from "@/app/lib/quota/store";
+
+export const metadata: Metadata = {
+  title: "Overview | QuotaHub Relay",
+  description: "Provider subscription and quota snapshot overview.",
+};
 
 export default async function DashboardPage() {
   const session = await auth.api.getSession({

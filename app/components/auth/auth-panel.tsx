@@ -3,7 +3,7 @@ import { ShieldAlert, ShieldCheck } from "lucide-react";
 import { SignInWithGithub } from "@/app/components/auth/sign-in-with-github";
 import { SignOutButton } from "@/app/components/auth/sign-out-button";
 import { UserSummary } from "@/app/components/auth/user-summary";
-import { MaterialAlert } from "@/app/components/material/primitives";
+import { MaterialAlert, MaterialIconSurface } from "@/app/components/material/primitives";
 import {
   expressiveContainer,
   expressiveItem,
@@ -30,16 +30,18 @@ export function AuthPanel({ errorMessage, isConfigured, user }: AuthPanelProps) 
       variants={expressiveContainer}
     >
       <motion.div className="mb-10" variants={expressiveItem}>
-        <motion.span
-          className="mb-6 grid size-16 place-items-center rounded-[var(--md-sys-shape-corner-large-increased)] bg-primary-container text-on-primary-container"
+        <motion.div
+          className="mb-6"
           layout
         >
-          {hasDeniedUser ? (
-            <ShieldAlert className="size-8" aria-hidden="true" />
-          ) : (
-            <ShieldCheck className="size-8" aria-hidden="true" />
-          )}
-        </motion.span>
+          <MaterialIconSurface size="lg" tone={hasDeniedUser ? "error" : "primary"}>
+            {hasDeniedUser ? (
+              <ShieldAlert className="size-8" aria-hidden="true" />
+            ) : (
+              <ShieldCheck className="size-8" aria-hidden="true" />
+            )}
+          </MaterialIconSurface>
+        </motion.div>
         <h2 className="md-headline-medium md-emphasized text-on-surface">
           {hasDeniedUser ? "Access denied" : "Sign in"}
         </h2>
@@ -50,7 +52,10 @@ export function AuthPanel({ errorMessage, isConfigured, user }: AuthPanelProps) 
         </p>
       </motion.div>
 
-      <motion.div className="border-y border-outline-variant py-6" variants={expressiveItem}>
+      <motion.div
+        className="border-y border-outline-variant py-6"
+        variants={expressiveItem}
+      >
         <div className="space-y-4">
           {errorMessage ? (
             <MaterialAlert title="Unable to continue" variant="error">

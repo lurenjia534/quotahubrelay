@@ -8,6 +8,8 @@ import {
   MaterialAlert,
   MaterialBadge,
   MaterialButton,
+  MaterialIconSurface,
+  MaterialSectionHeader,
   MaterialSwitch,
   MaterialTextField,
 } from "@/app/components/material/primitives";
@@ -122,26 +124,19 @@ export function ClientAccessSettings({
         variants={expressiveItem}
       >
       <motion.section layout>
-        <div className="mb-5 flex items-start justify-between gap-4">
-          <div className="flex min-w-0 gap-4">
-            <div className="grid size-12 shrink-0 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-primary-container text-on-primary-container">
-              <Wifi className="size-6" aria-hidden="true" />
-            </div>
-            <div className="min-w-0">
-              <h2 className="md-headline-small md-emphasized text-on-surface">
-                Remote access
-              </h2>
-              <p className="mt-1 md-body-medium text-on-surface-variant">
-                Control whether Bearer tokens can reach relay endpoints.
-              </p>
-            </div>
-          </div>
-          <MaterialBadge
-            variant={remoteClientAccessEnabled ? "success" : "outline"}
-          >
-            {remoteClientAccessEnabled ? "Enabled" : "Disabled"}
-          </MaterialBadge>
-        </div>
+        <MaterialSectionHeader
+          action={
+            <MaterialBadge
+              variant={remoteClientAccessEnabled ? "success" : "outline"}
+            >
+              {remoteClientAccessEnabled ? "Enabled" : "Disabled"}
+            </MaterialBadge>
+          }
+          className="mb-5"
+          description="Control whether Bearer tokens can reach relay endpoints."
+          icon={<Wifi className="size-6" aria-hidden="true" />}
+          title="Remote access"
+        />
 
         <div className="border-y border-outline-variant py-4">
           <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
@@ -170,19 +165,13 @@ export function ClientAccessSettings({
       </motion.section>
 
       <motion.section className="xl:border-l xl:border-outline-variant xl:pl-8" layout>
-        <div className="mb-5 flex items-start gap-4">
-          <div className="grid size-12 shrink-0 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-tertiary-container text-on-tertiary-container">
-            <KeyRound className="size-6" aria-hidden="true" />
-          </div>
-          <div>
-            <h2 className="md-headline-small md-emphasized text-on-surface">
-              Client tokens
-            </h2>
-            <p className="mt-1 md-body-medium text-on-surface-variant">
-              Create scoped tokens for trusted Android clients.
-            </p>
-          </div>
-        </div>
+        <MaterialSectionHeader
+          className="mb-5"
+          description="Create scoped tokens for trusted Android clients."
+          icon={<KeyRound className="size-6" aria-hidden="true" />}
+          title="Client tokens"
+          tone="tertiary"
+        />
 
         <form
           onSubmit={createClientToken}
@@ -269,9 +258,13 @@ export function ClientAccessSettings({
               animate="show"
               exit="exit"
             >
-              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container">
+              <MaterialIconSurface
+                className="mx-auto mb-4"
+                size="lg"
+                tone="secondary"
+              >
                 <ShieldCheck className="size-6" aria-hidden="true" />
-              </div>
+              </MaterialIconSurface>
               <h4 className="md-title-large md-emphasized text-on-surface">
                 No client tokens
               </h4>
@@ -280,7 +273,7 @@ export function ClientAccessSettings({
               </p>
             </motion.div>
             ) : (
-            <motion.div className="divide-y divide-outline-variant" layout>
+            <motion.div className="grid gap-2" layout>
               {clientTokens.map((token) => {
                 const isRevoking = pendingAction === `delete:${token.id}`;
 
@@ -288,7 +281,7 @@ export function ClientAccessSettings({
                   <motion.div
                     key={token.id}
                     layout
-                    className="grid gap-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                    className="md-expressive-surface grid gap-4 bg-surface-container-low px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
                     variants={expressiveListItem}
                     initial="hidden"
                     animate="show"

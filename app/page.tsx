@@ -67,7 +67,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             variants={expressiveItem}
           >
             <div className="flex items-center gap-4">
-              <span className="grid size-16 place-items-center rounded-[var(--md-sys-shape-corner-large-increased)] bg-primary text-2xl font-bold text-on-primary">
+              <span className="md-state-layer md-expressive-type grid size-16 place-items-center rounded-[var(--md-sys-shape-corner-large-increased)] bg-primary text-2xl font-bold text-on-primary expressive-shape">
                 Q
               </span>
               <div>
@@ -100,7 +100,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </div>
 
           <motion.div
-            className="grid divide-y divide-outline-variant overflow-hidden border-y border-outline-variant sm:grid-cols-3 sm:divide-x sm:divide-y-0"
+            className="grid gap-2 sm:grid-cols-3"
             variants={expressiveContainer}
           >
             <SignalCell
@@ -192,7 +192,7 @@ function RelayMap() {
         />
 
         <motion.div
-          className="absolute bottom-0 left-14 right-0 overflow-hidden rounded-[var(--md-sys-shape-corner-extra-extra-large)] bg-surface-container-low"
+          className="md-expressive-surface absolute bottom-0 left-14 right-0 overflow-hidden rounded-[var(--md-sys-shape-corner-extra-extra-large)] bg-surface-container-low"
           whileHover={materialHover}
         >
           <div className="flex items-center gap-3 border-b border-outline-variant px-5 py-4">
@@ -246,7 +246,7 @@ function SignalCell({
 }) {
   return (
     <motion.div
-      className="flex items-center gap-4 px-4 py-4"
+      className="md-state-layer md-expressive-surface flex items-center gap-4 bg-surface-container-low px-4 py-4"
       variants={expressiveItem}
       whileTap={materialTap}
     >

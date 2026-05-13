@@ -58,7 +58,7 @@ export function DashboardShell({
         <Link
           href="/dashboard"
           aria-label="QuotaHub Relay"
-          className="md-state-layer grid size-16 place-items-center rounded-[var(--md-sys-shape-corner-extra-large)] bg-primary text-xl font-bold text-on-primary"
+          className="md-state-layer md-expressive-type grid size-16 place-items-center rounded-[var(--md-sys-shape-corner-extra-large)] bg-primary text-xl font-bold text-on-primary expressive-shape"
         >
           Q
         </Link>
@@ -81,20 +81,23 @@ export function DashboardShell({
       <div className="min-w-0">
         <motion.header
           animate={{ opacity: 1, y: 0 }}
-          className="sticky top-0 z-30 border-b border-outline-variant bg-surface/90 backdrop-blur-xl"
+          className="sticky top-0 z-30 border-b border-outline-variant bg-surface-container-low/90 backdrop-blur-xl"
           initial={{ opacity: 0, y: -12 }}
           transition={materialSpring}
         >
-          <div className="flex min-h-20 items-center gap-4 px-4 sm:px-6 lg:px-8">
-            <Link href="/dashboard" className="flex items-center gap-3 lg:hidden">
-              <span className="grid size-11 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-primary font-bold text-on-primary">
+          <div className="flex min-h-20 items-center gap-2 px-3 sm:gap-4 sm:px-6 lg:px-8">
+            <Link
+              href="/dashboard"
+              className="flex min-w-0 flex-1 items-center gap-3 lg:hidden"
+            >
+              <span className="grid size-11 shrink-0 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-primary font-bold text-on-primary">
                 Q
               </span>
               <span className="min-w-0">
-                <span className="block md-title-medium md-emphasized">
+                <span className="block truncate md-title-medium md-emphasized">
                   QuotaHub Relay
                 </span>
-                <span className="block md-label-medium text-on-surface-variant">
+                <span className="hidden truncate md-label-medium text-on-surface-variant min-[420px]:block">
                   Server quota relay
                 </span>
               </span>
@@ -109,7 +112,7 @@ export function DashboardShell({
 
             <nav
               aria-label="Dashboard"
-              className="ml-auto flex items-center gap-1 rounded-full bg-surface-container-high p-1 lg:hidden"
+              className="ml-auto flex shrink-0 items-center gap-1 rounded-full bg-surface-container-high p-1 lg:hidden"
             >
               {navItems.map((item) => (
                 <TopNavItem
@@ -121,6 +124,11 @@ export function DashboardShell({
                 />
               ))}
             </nav>
+
+            <SignOutButton
+              iconOnly
+              className="size-10 shrink-0 px-0 sm:hidden"
+            />
 
             <div className="hidden min-w-0 items-center gap-3 sm:flex">
               <MaterialAvatar image={user.image} name={displayName} size="sm" />

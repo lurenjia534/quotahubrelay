@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/app/components/dashboard/dashboard-shell";
 import { StatusMetrics } from "@/app/components/dashboard/status-metrics";
@@ -8,6 +9,11 @@ import {
   getRelaySettings,
   listClientTokens,
 } from "@/app/lib/quota/store";
+
+export const metadata: Metadata = {
+  title: "Settings | QuotaHub Relay",
+  description: "Relay client access, token, and theme settings.",
+};
 
 export default async function DashboardSettingsPage() {
   const session = await auth.api.getSession({

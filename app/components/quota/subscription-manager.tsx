@@ -20,7 +20,9 @@ import {
   MaterialAlert,
   MaterialBadge,
   MaterialButton,
+  MaterialIconSurface,
   MaterialLinearProgressIndicator,
+  MaterialSectionHeader,
   MaterialTextField,
 } from "@/app/components/material/primitives";
 import {
@@ -162,25 +164,19 @@ export function SubscriptionManager({
         variants={expressiveItem}
       >
         <section className="min-w-0">
-          <div className="grid gap-4 border-b border-outline-variant pb-5 sm:grid-cols-[1fr_auto] sm:items-end">
-            <div className="flex min-w-0 gap-4">
-              <div className="grid size-12 shrink-0 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-primary-container text-on-primary-container">
-                <Database className="size-6" aria-hidden="true" />
-              </div>
-              <div className="min-w-0">
-                <h2 className="md-headline-small md-emphasized text-on-surface">
-                  Server subscriptions
-                </h2>
-                <p className="mt-1 md-body-medium text-on-surface-variant">
-                  {subscriptions.length} connected provider
-                  {subscriptions.length === 1 ? "" : "s"} with quota snapshots.
-                </p>
-              </div>
-            </div>
-            <MaterialBadge variant="primary">
-              {subscriptions.length} total
-            </MaterialBadge>
-          </div>
+          <MaterialSectionHeader
+            action={
+              <MaterialBadge variant="primary">
+                {subscriptions.length} total
+              </MaterialBadge>
+            }
+            className="border-b border-outline-variant pb-5"
+            description={`${subscriptions.length} connected provider${
+              subscriptions.length === 1 ? "" : "s"
+            } with quota snapshots.`}
+            icon={<Database className="size-6" aria-hidden="true" />}
+            title="Server subscriptions"
+          />
 
           <div className="divide-y divide-outline-variant">
             <AnimatePresence initial={false} mode="popLayout">
@@ -194,9 +190,13 @@ export function SubscriptionManager({
                 animate="show"
                 exit="exit"
               >
-                <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container">
+                <MaterialIconSurface
+                  className="mx-auto mb-4"
+                  size="lg"
+                  tone="secondary"
+                >
                   <Layers3 className="size-6" aria-hidden="true" />
-                </div>
+                </MaterialIconSurface>
                 <h3 className="md-title-large md-emphasized text-on-surface">
                   No subscriptions connected
                 </h3>
@@ -223,19 +223,13 @@ export function SubscriptionManager({
           className="xl:sticky xl:top-28 xl:self-start xl:border-l xl:border-outline-variant xl:pl-8"
           layout
         >
-          <div className="mb-5 flex items-start gap-4">
-            <div className="grid size-12 shrink-0 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-tertiary-container text-on-tertiary-container">
-              <Plus className="size-6" aria-hidden="true" />
-            </div>
-            <div>
-              <h2 className="md-headline-small md-emphasized text-on-surface">
-                Connect provider
-              </h2>
-              <p className="mt-1 md-body-medium text-on-surface-variant">
-                Credentials stay encrypted on this server.
-              </p>
-            </div>
-          </div>
+          <MaterialSectionHeader
+            className="mb-5"
+            description="Credentials stay encrypted on this server."
+            icon={<Plus className="size-6" aria-hidden="true" />}
+            title="Connect provider"
+            tone="tertiary"
+          />
 
           <div className="space-y-3">
             <div className="flex items-baseline justify-between gap-4">
@@ -246,7 +240,7 @@ export function SubscriptionManager({
                 {providers.length} available
               </p>
             </div>
-            <div className="overflow-hidden rounded-[var(--md-sys-shape-corner-extra-large)] bg-surface-container-low">
+            <div className="grid gap-2">
               {providers.map((provider) => {
                 const isSelected = provider.id === selectedProviderId;
                 const requiredCount = provider.credentialFields.filter(
@@ -266,11 +260,11 @@ export function SubscriptionManager({
                     }}
                     aria-pressed={isSelected}
                     className={cn(
-                      "md-state-layer flex min-h-16 w-full items-center gap-3 border-b border-outline-variant px-3 text-left last:border-b-0",
-                      "transition-colors duration-300 ease-[var(--md-sys-motion-easing-standard)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/25",
+                      "md-state-layer md-expressive-surface flex min-h-16 w-full items-center gap-3 px-3 text-left",
+                      "transition-[background-color,border-radius,color,font-variation-settings,transform] duration-300 ease-[var(--md-sys-motion-easing-standard)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/25",
                       isSelected
                         ? "bg-primary-container text-on-primary-container"
-                        : "text-on-surface",
+                        : "bg-surface-container-low text-on-surface",
                     )}
                   >
                     <span
@@ -433,7 +427,7 @@ function SubscriptionItem({
       {resources.length > 0 ? (
         <motion.div
           layout
-          className="mt-5 divide-y divide-outline-variant overflow-hidden rounded-[var(--md-sys-shape-corner-extra-large)] bg-surface-container-low"
+          className="mt-5 divide-y divide-outline-variant overflow-hidden rounded-[var(--md-sys-shape-corner-extra-large-increased)] bg-surface-container-low"
         >
           {resources.map((resource) => (
             <ResourceUsage key={resource.key} resource={resource} />
@@ -442,7 +436,7 @@ function SubscriptionItem({
       ) : (
         <motion.p
           layout
-          className="mt-5 border-l-4 border-outline-variant bg-surface-container-low px-4 py-3 md-body-medium text-on-surface-variant"
+          className="md-expressive-surface mt-5 border-l-4 border-outline-variant bg-surface-container-low px-4 py-3 md-body-medium text-on-surface-variant"
           transition={materialQuickSpring}
         >
           No quota snapshot is available yet. Refresh this subscription to fetch

@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { Check, Palette } from "lucide-react";
+import { MaterialSectionHeader } from "@/app/components/material/primitives";
 import {
   isMaterialThemeId,
   materialThemeChangeEvent,
@@ -37,24 +38,16 @@ export function ThemeColorSettings() {
 
   return (
     <motion.section layout variants={expressiveItem}>
-      <div className="mb-5 flex min-w-0 gap-4">
-        <div className="grid size-12 shrink-0 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-primary-container text-on-primary-container">
-          <Palette className="size-6" aria-hidden="true" />
-        </div>
-        <div className="min-w-0">
-          <h2 className="md-headline-small md-emphasized text-on-surface">
-            Dynamic color
-          </h2>
-          <p className="mt-1 max-w-2xl md-body-medium text-on-surface-variant">
-            Choose a prepared Material color scheme. Each option updates primary,
-            secondary, tertiary, surface, container, and outline roles together.
-          </p>
-        </div>
-      </div>
+      <MaterialSectionHeader
+        className="mb-5"
+        description="Choose a prepared Material color scheme. Each option updates primary, secondary, tertiary, surface, container, and outline roles together."
+        icon={<Palette className="size-6" aria-hidden="true" />}
+        title="Expressive color"
+      />
 
       <LayoutGroup id="material-theme-colors">
       <div className="grid gap-6 border-y border-outline-variant py-5 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <div className="divide-y divide-outline-variant overflow-hidden rounded-[var(--md-sys-shape-corner-extra-large)] bg-surface-container-low">
+        <div className="grid gap-2">
           {materialThemePresets.map((theme) => {
             const isSelected = theme.id === selectedThemeId;
 
@@ -69,10 +62,10 @@ export function ThemeColorSettings() {
                 whileTap={materialTap}
                 onClick={() => selectTheme(theme.id)}
                 className={cn(
-                  "md-state-layer grid w-full gap-4 px-4 py-4 text-left transition-colors sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center",
+                  "md-state-layer md-expressive-surface grid w-full gap-4 px-4 py-4 text-left transition-colors sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center",
                   isSelected
                     ? "bg-primary-container text-on-primary-container"
-                    : "text-on-surface",
+                    : "bg-surface-container-low text-on-surface",
                 )}
               >
                 <span className="min-w-0">
@@ -113,7 +106,7 @@ export function ThemeColorSettings() {
           <motion.div
             key={selectedTheme.id}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="overflow-hidden rounded-[var(--md-sys-shape-corner-extra-large)] bg-surface-container-low"
+            className="md-expressive-surface overflow-hidden rounded-[var(--md-sys-shape-corner-extra-large)] bg-surface-container-low"
             initial={{ opacity: 0, scale: 0.98, y: 8 }}
             transition={materialSpring}
           >
