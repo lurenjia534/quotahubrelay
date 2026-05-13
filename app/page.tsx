@@ -8,10 +8,10 @@ import { AuthPanel } from "@/app/components/auth/auth-panel";
 import {
   expressiveContainer,
   expressiveItem,
-  materialEmphasized,
-  materialHover,
+  materialHeroSpatial,
+  materialHeroSurfaceHover,
+  materialPress,
   materialSpring,
-  materialTap,
 } from "@/app/components/material/motion";
 
 type LoginPageProps = {
@@ -162,38 +162,27 @@ function RelayMap() {
     <motion.div className="hidden xl:block" variants={expressiveItem}>
       <div className="relative min-h-[420px]">
         <motion.div
-          animate={{ y: [0, -10, 0], scaleY: [1, 1.04, 1] }}
+          animate={{ opacity: 1, y: 0, scaleY: 1 }}
           className="absolute left-0 top-5 h-[22rem] w-28 rounded-full bg-primary-container"
-          transition={{
-            duration: 6,
-            ease: materialEmphasized,
-            repeat: Infinity,
-          }}
+          initial={{ opacity: 0, y: 18, scaleY: 0.86 }}
+          transition={{ ...materialHeroSpatial, delay: 0.12 }}
         />
         <motion.div
-          animate={{ y: [0, 12, 0], scaleY: [1, 0.96, 1] }}
+          animate={{ opacity: 1, y: 0, scaleY: 1 }}
           className="absolute left-[4.5rem] top-20 h-72 w-28 rounded-full bg-secondary-container"
-          transition={{
-            delay: 0.3,
-            duration: 6.8,
-            ease: materialEmphasized,
-            repeat: Infinity,
-          }}
+          initial={{ opacity: 0, y: 24, scaleY: 0.9 }}
+          transition={{ ...materialHeroSpatial, delay: 0.2 }}
         />
         <motion.div
-          animate={{ y: [0, -8, 0], scaleY: [1, 1.03, 1] }}
+          animate={{ opacity: 1, y: 0, scaleY: 1 }}
           className="absolute left-36 top-36 h-56 w-28 rounded-full bg-tertiary-container"
-          transition={{
-            delay: 0.6,
-            duration: 6.2,
-            ease: materialEmphasized,
-            repeat: Infinity,
-          }}
+          initial={{ opacity: 0, y: 16, scaleY: 0.88 }}
+          transition={{ ...materialHeroSpatial, delay: 0.28 }}
         />
 
         <motion.div
           className="md-expressive-surface absolute bottom-0 left-14 right-0 overflow-hidden rounded-[var(--md-sys-shape-corner-extra-extra-large)] bg-surface-container-low"
-          whileHover={materialHover}
+          whileHover={materialHeroSurfaceHover}
         >
           <div className="flex items-center gap-3 border-b border-outline-variant px-5 py-4">
             <span className="grid size-11 place-items-center rounded-full bg-primary text-on-primary">
@@ -248,7 +237,7 @@ function SignalCell({
     <motion.div
       className="md-state-layer md-expressive-surface flex items-center gap-4 bg-surface-container-low px-4 py-4"
       variants={expressiveItem}
-      whileTap={materialTap}
+      whileTap={materialPress}
     >
       <span className="grid size-11 shrink-0 place-items-center rounded-full bg-secondary-container text-on-secondary-container">
         {icon}

@@ -29,9 +29,10 @@ import {
   expressiveContainer,
   expressiveItem,
   expressiveListItem,
-  materialHover,
-  materialQuickSpring,
-  materialTap,
+  materialDefaultSpatial,
+  materialFastSpatial,
+  materialPress,
+  materialRowHover,
 } from "@/app/components/material/motion";
 import { cn } from "@/lib/utils";
 
@@ -252,24 +253,31 @@ export function SubscriptionManager({
                     key={provider.id}
                     type="button"
                     layout
-                    whileHover={materialHover}
-                    whileTap={materialTap}
+                    whileHover={materialRowHover}
+                    whileTap={materialPress}
                     onClick={() => {
                       setSelectedProviderId(provider.id);
                       setCredentialValues({});
                     }}
                     aria-pressed={isSelected}
                     className={cn(
-                      "md-state-layer md-expressive-surface flex min-h-16 w-full items-center gap-3 px-3 text-left",
+                      "md-state-layer md-expressive-surface relative flex min-h-16 w-full items-center gap-3 overflow-hidden px-3 text-left",
                       "transition-[background-color,border-radius,color,font-variation-settings,transform] duration-300 ease-[var(--md-sys-motion-easing-standard)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/25",
                       isSelected
-                        ? "bg-primary-container text-on-primary-container"
+                        ? "text-on-primary-container"
                         : "bg-surface-container-low text-on-surface",
                     )}
                   >
+                    {isSelected ? (
+                      <motion.span
+                        className="absolute inset-0 rounded-[inherit] bg-primary-container"
+                        layoutId="provider-selected-container"
+                        transition={materialDefaultSpatial}
+                      />
+                    ) : null}
                     <span
                       className={cn(
-                        "grid size-11 shrink-0 place-items-center rounded-full md-label-large md-emphasized",
+                        "relative z-10 grid size-11 shrink-0 place-items-center rounded-full md-label-large md-emphasized",
                         isSelected
                           ? "bg-primary text-on-primary"
                           : "bg-surface text-on-surface-variant",
@@ -278,7 +286,7 @@ export function SubscriptionManager({
                     >
                       {providerInitials(provider.displayName)}
                     </span>
-                    <span className="min-w-0 flex-1">
+                    <span className="relative z-10 min-w-0 flex-1">
                       <span className="block truncate md-title-small md-emphasized">
                         {provider.displayName}
                       </span>
@@ -289,7 +297,14 @@ export function SubscriptionManager({
                       </span>
                     </span>
                     {isSelected ? (
-                      <Check className="size-5 shrink-0" aria-hidden="true" />
+                      <motion.span
+                        className="relative z-10"
+                        initial={{ opacity: 0, scale: 0.72 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={materialFastSpatial}
+                      >
+                        <Check className="size-5 shrink-0" aria-hidden="true" />
+                      </motion.span>
                     ) : null}
                   </motion.button>
                 );
@@ -437,7 +452,7 @@ function SubscriptionItem({
         <motion.p
           layout
           className="md-expressive-surface mt-5 border-l-4 border-outline-variant bg-surface-container-low px-4 py-3 md-body-medium text-on-surface-variant"
-          transition={materialQuickSpring}
+          transition={materialFastSpatial}
         >
           No quota snapshot is available yet. Refresh this subscription to fetch
           the latest provider state.

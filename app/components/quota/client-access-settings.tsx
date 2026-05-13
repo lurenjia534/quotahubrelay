@@ -17,7 +17,7 @@ import {
   expressiveContainer,
   expressiveItem,
   expressiveListItem,
-  materialHover,
+  materialRowHover,
 } from "@/app/components/material/motion";
 import { ThemeColorSettings } from "@/app/components/quota/theme-color-settings";
 
@@ -286,7 +286,7 @@ export function ClientAccessSettings({
                     initial="hidden"
                     animate="show"
                     exit="exit"
-                    whileHover={materialHover}
+                    whileHover={materialRowHover}
                   >
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">

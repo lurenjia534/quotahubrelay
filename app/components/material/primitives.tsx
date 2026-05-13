@@ -392,14 +392,14 @@ export function MaterialLinearProgressIndicator({
       role="progressbar"
     >
       <div
-        className="absolute right-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-surface-container-highest transition-[left] duration-700 ease-[var(--md-sys-motion-easing-emphasized-decelerate)]"
+        className="absolute right-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-surface-container-highest transition-[left] duration-[420ms] ease-[var(--md-sys-motion-easing-emphasized-decelerate)]"
         style={{ left: trackLeft }}
       />
       {percent > 0 ? (
         <div
           className={cn(
             "absolute left-0 top-1/2 h-1 -translate-y-1/2 rounded-full",
-            "transition-[width] duration-700 ease-[var(--md-sys-motion-easing-emphasized-decelerate)]",
+            "transition-[width] duration-[420ms] ease-[var(--md-sys-motion-easing-emphasized-decelerate)]",
             colorClassName,
           )}
           style={{ width: activeWidth }}

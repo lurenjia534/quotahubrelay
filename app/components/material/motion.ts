@@ -25,10 +25,32 @@ export const materialSpring = {
   bounce: 0.18,
 };
 
-export const materialQuickSpring = {
+export const materialFastSpatial = {
   type: "spring" as const,
-  visualDuration: 0.28,
-  bounce: 0.1,
+  visualDuration: 0.24,
+  bounce: 0.08,
+};
+
+export const materialDefaultSpatial = {
+  type: "spring" as const,
+  visualDuration: 0.42,
+  bounce: 0.14,
+};
+
+export const materialHeroSpatial = {
+  type: "spring" as const,
+  visualDuration: 0.58,
+  bounce: 0.18,
+};
+
+export const materialFastEffects = {
+  duration: 0.16,
+  ease: materialEmphasizedDecelerate,
+};
+
+export const materialDefaultEffects = {
+  duration: 0.28,
+  ease: materialEmphasized,
 };
 
 export const materialEnterTransition = {
@@ -95,17 +117,36 @@ export const expressiveListItem = {
   },
 };
 
-export const materialHover = {
-  scale: 1.01,
-  y: -2,
-  transition: materialQuickSpring,
+export const materialSurfaceHover = {
+  scale: 1.004,
+  transition: materialFastSpatial,
 };
 
-export const materialTap = {
-  scale: 0.97,
+export const materialRowHover = {
+  scale: 1.002,
+  x: 2,
+  transition: materialFastSpatial,
+};
+
+export const materialHeroSurfaceHover = {
+  scale: 1.008,
+  transition: materialDefaultSpatial,
+};
+
+export const materialPress = {
+  scale: 0.985,
   transition: {
     type: "spring" as const,
-    visualDuration: 0.18,
-    bounce: 0.06,
+    visualDuration: 0.14,
+    bounce: 0.04,
+  },
+};
+
+export const materialIconPress = {
+  scale: 0.94,
+  transition: {
+    type: "spring" as const,
+    visualDuration: 0.14,
+    bounce: 0.04,
   },
 };

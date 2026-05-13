@@ -15,9 +15,11 @@ import { applyMaterialTheme } from "@/app/components/material/theme-provider";
 import {
   expressiveItem,
   expressiveListItem,
-  materialHover,
+  materialDefaultSpatial,
+  materialFastSpatial,
+  materialPress,
+  materialRowHover,
   materialSpring,
-  materialTap,
 } from "@/app/components/material/motion";
 import { cn } from "@/lib/utils";
 
@@ -58,17 +60,25 @@ export function ThemeColorSettings() {
                 aria-pressed={isSelected}
                 layout
                 variants={expressiveListItem}
-                whileHover={materialHover}
-                whileTap={materialTap}
+                whileHover={materialRowHover}
+                whileTap={materialPress}
                 onClick={() => selectTheme(theme.id)}
                 className={cn(
-                  "md-state-layer md-expressive-surface grid w-full gap-4 px-4 py-4 text-left transition-colors sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center",
+                  "md-state-layer md-expressive-surface relative grid w-full gap-4 overflow-hidden px-4 py-4 text-left transition-colors sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center",
                   isSelected
-                    ? "bg-primary-container text-on-primary-container"
+                    ? "text-on-primary-container"
                     : "bg-surface-container-low text-on-surface",
                 )}
               >
-                <span className="min-w-0">
+                {isSelected ? (
+                  <motion.span
+                    className="absolute inset-0 rounded-[inherit] bg-primary-container"
+                    layoutId="theme-selected-container"
+                    transition={materialDefaultSpatial}
+                  />
+                ) : null}
+
+                <span className="relative z-10 min-w-0">
                   <span className="block md-title-small md-emphasized">
                     {theme.name}
                   </span>
@@ -77,7 +87,7 @@ export function ThemeColorSettings() {
                   </span>
                 </span>
 
-                <span className="flex items-center gap-3">
+                <span className="relative z-10 flex items-center gap-3">
                   <RoleSwatches roles={theme.roles} />
                   <AnimatePresence initial={false}>
                     {isSelected ? (
@@ -87,7 +97,7 @@ export function ThemeColorSettings() {
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.72, opacity: 0 }}
                         layoutId="theme-selected-check"
-                        transition={materialSpring}
+                        transition={materialFastSpatial}
                       >
                         <Check className="size-5" aria-hidden="true" />
                       </motion.span>
@@ -116,7 +126,7 @@ export function ThemeColorSettings() {
               style={{
                 background: selectedTheme.roles.primary,
               }}
-              transition={materialSpring}
+              transition={materialDefaultSpatial}
             />
             <div className="grid grid-cols-3">
               <RoleBlock label="Primary" value={selectedTheme.roles.primary} />

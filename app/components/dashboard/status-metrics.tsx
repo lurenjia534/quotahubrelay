@@ -2,8 +2,8 @@ import * as motion from "motion/react-client";
 import {
   expressiveContainer,
   expressiveItem,
-  materialHover,
-  materialTap,
+  materialPress,
+  materialSurfaceHover,
 } from "@/app/components/material/motion";
 import { cn } from "@/lib/utils";
 
@@ -33,8 +33,8 @@ export function StatusMetrics({ metrics }: StatusMetricsProps) {
             index === 2 && "bg-tertiary-container text-on-tertiary-container",
           )}
           variants={expressiveItem}
-          whileHover={materialHover}
-          whileTap={materialTap}
+          whileHover={materialSurfaceHover}
+          whileTap={materialPress}
         >
           <motion.span
             animate={{ scaleX: 1 }}
