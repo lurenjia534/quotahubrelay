@@ -35,7 +35,7 @@ export default async function DashboardPage() {
   return (
     <DashboardShell
       activeItem="overview"
-      description="Manage provider credentials on the server and expose normalized quota snapshots for linked clients."
+      description="Review connected provider subscriptions at a glance, then open a subscription for model-level quota windows."
       title="Overview"
       user={user}
     >
