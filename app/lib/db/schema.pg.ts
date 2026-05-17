@@ -1,5 +1,8 @@
 import { bigint, index, integer, pgTable, text } from "drizzle-orm/pg-core";
-import type { QuotaSubscription } from "@/app/lib/quota/types";
+import type {
+  QuotaSubscription,
+  RelayRefreshMode,
+} from "@/app/lib/quota/types";
 
 const timestampMillis = (name: string) => bigint(name, { mode: "number" });
 
@@ -60,5 +63,9 @@ export const quotaRelaySettings = pgTable("quota_relay_settings", {
   remoteClientAccessEnabled: integer("remote_client_access_enabled")
     .notNull()
     .default(0),
+  refreshMode: text("refresh_mode")
+    .$type<RelayRefreshMode>()
+    .notNull()
+    .default("manual"),
   updatedAt: timestampMillis("updated_at").notNull(),
 });

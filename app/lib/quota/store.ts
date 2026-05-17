@@ -15,6 +15,8 @@ import {
   RelaySettings,
   RelayClientToken,
   SecretBundle,
+  defaultRelayRefreshMode,
+  isRelayRefreshMode,
 } from "@/app/lib/quota/types";
 import { providerById } from "@/app/lib/quota/providers";
 
@@ -50,6 +52,7 @@ type DeletedSubscriptionRow = {
 type RelaySettingsRow = {
   userId: string;
   remoteClientAccessEnabled: boolean | number;
+  refreshMode: string | null;
   updatedAt: number;
 };
 
@@ -203,6 +206,9 @@ export async function getRelaySettings(userId: string): Promise<RelaySettings> {
 
   return {
     remoteClientAccessEnabled: Boolean(row?.remoteClientAccessEnabled),
+    refreshMode: isRelayRefreshMode(row?.refreshMode)
+      ? row.refreshMode
+      : defaultRelayRefreshMode,
   };
 }
 
@@ -216,12 +222,14 @@ export async function updateRelaySettings(
     .values({
       userId,
       remoteClientAccessEnabled: settings.remoteClientAccessEnabled ? 1 : 0,
+      refreshMode: settings.refreshMode,
       updatedAt: now,
     })
     .onConflictDoUpdate({
       target: schema.quotaRelaySettings.userId,
       set: {
         remoteClientAccessEnabled: settings.remoteClientAccessEnabled ? 1 : 0,
+        refreshMode: settings.refreshMode,
         updatedAt: now,
       },
     });

@@ -9,6 +9,7 @@ import {
   getRelaySettings,
   listClientTokens,
 } from "@/app/lib/quota/store";
+import { relayRefreshModeLabels } from "@/app/lib/quota/types";
 
 export const metadata: Metadata = {
   title: "Settings | QuotaHub Relay",
@@ -44,12 +45,12 @@ export default async function DashboardSettingsPage() {
           metrics={[
             { label: "Client tokens", value: clientTokens.length },
             {
-              label: "Active devices",
-              value: clientTokens.filter((token) => token.lastUsedAt).length,
-            },
-            {
               label: "Remote client",
               value: relaySettings.remoteClientAccessEnabled ? "On" : "Off",
+            },
+            {
+              label: "Refresh",
+              value: relayRefreshModeLabels[relaySettings.refreshMode],
             },
           ]}
         />
@@ -61,6 +62,7 @@ export default async function DashboardSettingsPage() {
           initialRemoteClientAccessEnabled={
             relaySettings.remoteClientAccessEnabled
           }
+          initialRefreshMode={relaySettings.refreshMode}
         />
       </div>
     </DashboardShell>

@@ -1,0 +1,1 @@
+ALTER TABLE `quota_relay_settings` ADD `refresh_mode` text DEFAULT 'manual' NOT NULL;

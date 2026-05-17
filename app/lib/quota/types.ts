@@ -107,7 +107,32 @@ export type RelayClientToken = {
 
 export type RelaySettings = {
   remoteClientAccessEnabled: boolean;
+  refreshMode: RelayRefreshMode;
 };
+
+export const relayRefreshModes = ["realtime", "balanced", "manual"] as const;
+export type RelayRefreshMode = (typeof relayRefreshModes)[number];
+
+export const relayRefreshModeLabels = {
+  realtime: "Realtime",
+  balanced: "Balanced",
+  manual: "Manual",
+} satisfies Record<RelayRefreshMode, string>;
+
+export const relayRefreshModeIntervals = {
+  realtime: 60_000,
+  balanced: 3_600_000,
+  manual: null,
+} satisfies Record<RelayRefreshMode, number | null>;
+
+export const defaultRelayRefreshMode: RelayRefreshMode = "manual";
+
+export function isRelayRefreshMode(value: unknown): value is RelayRefreshMode {
+  return (
+    typeof value === "string" &&
+    (relayRefreshModes as readonly string[]).includes(value)
+  );
+}
 
 export const quotaBuckets = {
   budget: "budget",

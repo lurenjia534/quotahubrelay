@@ -11,8 +11,8 @@ import {
 import {
   createSubscription,
   listDeletedSubscriptions,
-  listSubscriptions,
 } from "@/app/lib/quota/store";
+import { listSubscriptionsWithAutoRefresh } from "@/app/lib/quota/refresh";
 
 export const runtime = "nodejs";
 
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
   const deletedSince = parseDeletedSince(request);
   if (deletedSince instanceof Response) return deletedSince;
 
-  const subscriptions = await listSubscriptions(user.id);
+  const subscriptions = await listSubscriptionsWithAutoRefresh(user.id);
   const deletedSubscriptions = await listDeletedSubscriptions(user.id, deletedSince);
   return Response.json({ subscriptions, deletedSubscriptions });
 }

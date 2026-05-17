@@ -2,8 +2,23 @@
 
 import { FormEvent, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { KeyRound, ShieldCheck, Trash2, Wifi } from "lucide-react";
-import { RelayClientToken } from "@/app/lib/quota/types";
+import {
+  Hand,
+  KeyRound,
+  RefreshCw,
+  ShieldCheck,
+  Timer,
+  Trash2,
+  Wifi,
+  Zap,
+} from "lucide-react";
+import {
+  relayRefreshModeLabels,
+} from "@/app/lib/quota/types";
+import type {
+  RelayClientToken,
+  RelayRefreshMode,
+} from "@/app/lib/quota/types";
 import {
   MaterialAlert,
   MaterialBadge,
@@ -17,6 +32,7 @@ import {
   expressiveContainer,
   expressiveItem,
   expressiveListItem,
+  materialPress,
   materialRowHover,
 } from "@/app/components/material/motion";
 import { ThemeColorSettings } from "@/app/components/quota/theme-color-settings";
@@ -24,16 +40,19 @@ import { ThemeColorSettings } from "@/app/components/quota/theme-color-settings"
 type ClientAccessSettingsProps = {
   initialClientTokens: RelayClientToken[];
   initialRemoteClientAccessEnabled: boolean;
+  initialRefreshMode: RelayRefreshMode;
 };
 
 export function ClientAccessSettings({
   initialClientTokens,
   initialRemoteClientAccessEnabled,
+  initialRefreshMode,
 }: ClientAccessSettingsProps) {
   const [clientTokens, setClientTokens] = useState(initialClientTokens);
   const [remoteClientAccessEnabled, setRemoteClientAccessEnabled] = useState(
     initialRemoteClientAccessEnabled,
   );
+  const [refreshMode, setRefreshMode] = useState(initialRefreshMode);
   const [newClientToken, setNewClientToken] = useState<string | null>(null);
   const [clientTokenName, setClientTokenName] = useState("Android client");
   const [pendingAction, setPendingAction] = useState<string | null>(null);
@@ -42,7 +61,7 @@ export function ClientAccessSettings({
   async function updateRemoteClientAccess(enabled: boolean) {
     const previousValue = remoteClientAccessEnabled;
     setRemoteClientAccessEnabled(enabled);
-    setPendingAction("settings");
+    setPendingAction("settings:remote");
     setMessage(null);
 
     const response = await fetch("/api/relay/settings", {
@@ -60,6 +79,31 @@ export function ClientAccessSettings({
     }
 
     setRemoteClientAccessEnabled(payload.settings.remoteClientAccessEnabled);
+  }
+
+  async function updateRefreshMode(mode: RelayRefreshMode) {
+    if (mode === refreshMode) return;
+
+    const previousMode = refreshMode;
+    setRefreshMode(mode);
+    setPendingAction("settings:refresh");
+    setMessage(null);
+
+    const response = await fetch("/api/relay/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshMode: mode }),
+    });
+    const payload = await response.json();
+    setPendingAction(null);
+
+    if (!response.ok) {
+      setRefreshMode(previousMode);
+      setMessage(payload.error?.message ?? "Failed to update relay settings.");
+      return;
+    }
+
+    setRefreshMode(payload.settings.refreshMode);
   }
 
   async function createClientToken(event: FormEvent<HTMLFormElement>) {
@@ -119,6 +163,75 @@ export function ClientAccessSettings({
     >
       <ThemeColorSettings />
 
+      <motion.section layout variants={expressiveItem}>
+        <MaterialSectionHeader
+          action={
+            <MaterialBadge variant="primary">
+              {relayRefreshModeLabels[refreshMode]}
+            </MaterialBadge>
+          }
+          className="mb-5"
+          description="Set how aggressively relay reads should refresh stale provider snapshots."
+          icon={<RefreshCw className="size-6" aria-hidden="true" />}
+          title="Refresh cadence"
+          tone="secondary"
+        />
+
+        <div
+          className="grid gap-2 border-y border-outline-variant py-4 md:grid-cols-3"
+          role="radiogroup"
+          aria-label="Refresh cadence"
+        >
+          {refreshModeOptions.map((option) => {
+            const isSelected = option.id === refreshMode;
+            const Icon = option.icon;
+
+            return (
+              <motion.button
+                key={option.id}
+                type="button"
+                role="radio"
+                aria-checked={isSelected}
+                disabled={pendingAction?.startsWith("settings")}
+                onClick={() => updateRefreshMode(option.id)}
+                className={classNamesForRefreshModeButton(isSelected)}
+                whileHover={materialRowHover}
+                whileTap={materialPress}
+              >
+                {isSelected ? (
+                  <motion.span
+                    className="absolute inset-0 rounded-[inherit] bg-primary-container"
+                    layoutId="refresh-mode-selected-container"
+                  />
+                ) : null}
+                <span className="relative z-10 flex items-start gap-3">
+                  <span
+                    className={
+                      isSelected
+                        ? "grid size-11 shrink-0 place-items-center rounded-[var(--md-sys-shape-corner-large-increased)] bg-primary text-on-primary"
+                        : "grid size-11 shrink-0 place-items-center rounded-[var(--md-sys-shape-corner-large)] bg-surface-container-high text-on-surface-variant"
+                    }
+                  >
+                    <Icon className="size-5" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block md-title-small md-emphasized">
+                      {option.label}
+                    </span>
+                    <span className="mt-1 block md-label-medium opacity-80">
+                      {option.interval}
+                    </span>
+                    <span className="mt-3 block md-body-small opacity-80">
+                      {option.description}
+                    </span>
+                  </span>
+                </span>
+              </motion.button>
+            );
+          })}
+        </div>
+      </motion.section>
+
       <motion.div
         className="grid gap-8 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]"
         variants={expressiveItem}
@@ -157,7 +270,7 @@ export function ClientAccessSettings({
             <MaterialSwitch
               id="remote-client-access"
               checked={remoteClientAccessEnabled}
-              disabled={pendingAction === "settings"}
+              disabled={pendingAction === "settings:remote"}
               onCheckedChange={updateRemoteClientAccess}
             />
           </div>
@@ -346,4 +459,43 @@ function isErrorMessage(message: string) {
     normalized.includes("error") ||
     normalized.includes("invalid")
   );
+}
+
+const refreshModeOptions = [
+  {
+    id: "realtime",
+    label: "Realtime",
+    interval: "Every minute",
+    description: "Refreshes due snapshots when relay reads are older than 60 seconds.",
+    icon: Zap,
+  },
+  {
+    id: "balanced",
+    label: "Balanced",
+    interval: "Every hour",
+    description: "Keeps provider calls lower while updating stale snapshots hourly.",
+    icon: Timer,
+  },
+  {
+    id: "manual",
+    label: "Manual",
+    interval: "Manual only",
+    description: "Updates only through the explicit subscription refresh action.",
+    icon: Hand,
+  },
+] satisfies {
+  id: RelayRefreshMode;
+  label: string;
+  interval: string;
+  description: string;
+  icon: typeof Zap;
+}[];
+
+function classNamesForRefreshModeButton(isSelected: boolean) {
+  const baseClassName =
+    "md-state-layer md-expressive-surface relative min-h-32 overflow-hidden px-4 py-4 text-left transition-[background-color,border-radius,color,transform] duration-300 ease-[var(--md-sys-motion-easing-standard)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/25 disabled:pointer-events-none disabled:opacity-45";
+
+  return isSelected
+    ? `${baseClassName} text-on-primary-container`
+    : `${baseClassName} bg-surface-container-low text-on-surface hover:bg-surface-container`;
 }

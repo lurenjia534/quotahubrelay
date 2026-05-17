@@ -1,5 +1,8 @@
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import type { QuotaSubscription } from "@/app/lib/quota/types";
+import type {
+  QuotaSubscription,
+  RelayRefreshMode,
+} from "@/app/lib/quota/types";
 
 export const quotaSubscription = sqliteTable(
   "quota_subscription",
@@ -58,5 +61,9 @@ export const quotaRelaySettings = sqliteTable("quota_relay_settings", {
   remoteClientAccessEnabled: integer("remote_client_access_enabled")
     .notNull()
     .default(0),
+  refreshMode: text("refresh_mode")
+    .$type<RelayRefreshMode>()
+    .notNull()
+    .default("manual"),
   updatedAt: integer("updated_at").notNull(),
 });
