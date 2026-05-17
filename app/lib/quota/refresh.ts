@@ -23,6 +23,11 @@ export type RefreshSubscriptionSnapshotResult =
   | { status: "not_found" }
   | { status: "unsupported_provider" };
 
+const pendingRefreshes = new Map<
+  string,
+  Promise<RefreshSubscriptionSnapshotResult>
+>();
+
 export async function listSubscriptionsWithAutoRefresh(userId: string) {
   const subscriptions = await listSubscriptions(userId);
   return refreshDueSubscriptions(userId, subscriptions);
@@ -56,6 +61,24 @@ export async function refreshSubscriptionSnapshot(
   userId: string,
   id: string,
 ): Promise<RefreshSubscriptionSnapshotResult> {
+  const key = refreshKey(userId, id);
+  const pendingRefresh = pendingRefreshes.get(key);
+  if (pendingRefresh) return pendingRefresh;
+
+  const refresh = refreshSubscriptionSnapshotInner(userId, id).finally(() => {
+    if (pendingRefreshes.get(key) === refresh) {
+      pendingRefreshes.delete(key);
+    }
+  });
+
+  pendingRefreshes.set(key, refresh);
+  return refresh;
+}
+
+async function refreshSubscriptionSnapshotInner(
+  userId: string,
+  id: string,
+): Promise<RefreshSubscriptionSnapshotResult> {
   const stored = await getSubscriptionCredentials(userId, id);
   if (!stored) return { status: "not_found" };
 
@@ -80,6 +103,10 @@ export async function refreshSubscriptionSnapshot(
     );
     throw error;
   }
+}
+
+function refreshKey(userId: string, subscriptionId: string) {
+  return `${userId}:${subscriptionId}`;
 }
 
 async function refreshDueSubscriptions(
